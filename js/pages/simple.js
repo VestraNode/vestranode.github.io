@@ -74,6 +74,7 @@ export default {
       const price = S.enc?.price?.price;
       btnDownload.textContent = enc ? (price ? `Завантажити фото · ${price} пакс.` : 'Завантажити фото') : 'Завантажити текст';
       priceLine.replaceChildren(...(enc && S.enc && !S.dirty ? [h('span', {}, 'Ціна завантаження'), h('b', {}, `${price} пакс.`)] : []));
+      if (lab.data.hasText !== !!S.text) lab.set({ hasText: !!S.text });      // картка «після» залежить від того, чи є текст
       textInfo.textContent = S.text ? `${fmtInt([...S.text].length)} символів · ${fmtInt(new Blob([S.text]).size)} байт` : '';
       chip.hidden = !S.textFile; if (S.textFile) chip.replaceChildren(S.textFile.name, h('button', { class: 'icon-btn', style: { width: '22px', height: '22px' }, onclick: () => { text.value = ''; S.text = ''; S.textFile = null; touched(); } }, '✕'));
       verifyBox.hidden = !(enc && S.verify);

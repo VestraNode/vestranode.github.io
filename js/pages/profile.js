@@ -140,7 +140,7 @@ export default {
       const activeDays = Object.keys(act.days).length;
       const main = h('div', { class: 'stack' },
         security,
-        h('div', { class: 'card' },
+        h('div', { class: 'card span-all' },
           h('div', { class: 'section-title' }, h('h3', {}, 'Активність'), h('small', {}, 'останні 12 місяців')),
           h('div', { class: 'stat-row' }, h('div', {}, h('small', {}, 'Усього дій'), h('b', {}, fmtInt(act.total))),
             h('div', {}, h('small', {}, 'Активних днів'), h('b', {}, fmtInt(activeDays))), h('div', {}, h('small', {}, 'Серія днів'), h('b', {}, fmtInt(act.streak)))),

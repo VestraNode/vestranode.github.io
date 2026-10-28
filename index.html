@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="css/lab.css">
   <link rel="stylesheet" href="css/editor.css">
   <link rel="stylesheet" href="css/extra.css">
+  <link rel="modulepreload" href="js/core.js">
+  <link rel="modulepreload" href="js/icons.js">
+  <link rel="modulepreload" href="js/parts.js">
 </head>
 <body>
   <header id="topbar"></header>
@@ -22,6 +25,7 @@
   <div id="toasts"></div>
   <div id="modal-root"></div>
   <script src="config.js"></script>
+  <script>try{(window.VN_CONFIG.backends||[]).forEach(function(b){if(b.url){var l=document.createElement("link");l.rel="preconnect";l.href=b.url;l.crossOrigin="anonymous";document.head.appendChild(l);}});}catch(e){}</script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

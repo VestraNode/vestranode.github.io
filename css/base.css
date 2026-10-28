@@ -9,6 +9,9 @@
   --radius: 1rem; --shadow: 0 0.625rem 1.875rem rgba(0, 0, 0, .35);
   --font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
   --header-h: 4.25rem;
+  /* ширини контейнерів: у rem (масштабуються разом з інтерфейсом) і не менше частки вікна — щоб на 2K/4K/ultrawide не лишалось порожніх смуг */
+  --wide: max(150rem, 86vw); --land: max(120rem, 64vw);
+  --pad-x: clamp(1.25rem, 2.2vw, 5rem);
   color-scheme: dark;
 }
 :root[data-theme="light"] {

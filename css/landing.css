@@ -30,7 +30,7 @@ body[data-page="home"] #topbar { color: #fff; }
 .hint { margin-top: 1.375rem; color: rgba(255, 255, 255, .6); font-size: 0.875rem; }
 .hint b { color: #ffd166; }
 
-.mock-wrap { max-width: 73.75rem; margin: 4.375rem auto 0; padding: 0 0 0; }
+.mock-wrap { max-width: min(var(--land), 100%); margin: 4.375rem auto 0; padding: 0 0 0; }
 .mock { background: rgba(14, 15, 19, .88); border: 1px solid rgba(255, 255, 255, .1); border-bottom: 0; border-radius: 1.625rem 1.625rem 0 0; backdrop-filter: blur(0.625rem); box-shadow: 0 -1.25rem 5rem rgba(110, 90, 255, .18); overflow: hidden; text-align: left; }
 .mock-bar { display: flex; align-items: center; gap: 0.4375rem; padding: 0.875rem 1.125rem; border-bottom: 1px solid rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .55); font-size: 0.7812rem; }
 .mock-bar i { width: 0.6875rem; height: 0.6875rem; border-radius: 50%; background: #ff5f57; } .mock-bar i:nth-child(2) { background: #febc2e; } .mock-bar i:nth-child(3) { background: #28c840; margin-right: 0.5rem; }
@@ -49,7 +49,7 @@ body[data-page="home"] #topbar { color: #fff; }
 @keyframes dash { to { stroke-dashoffset: -20; } }
 
 /* секції */
-.section { max-width: 73.75rem; margin: 0 auto; padding: 6.875rem 1.5rem 1.25rem; color: #fff; }
+.section { max-width: var(--land); margin: 0 auto; padding: 6.875rem 1.5rem 1.25rem; color: #fff; }
 .section-head { text-align: center; margin-bottom: 3.375rem; }
 .section-head h2 { font-size: clamp(1.875rem, 4vw, 3rem); font-weight: 800; letter-spacing: -1px; }
 .section-head p { max-width: 45rem; margin: 0.875rem auto 0; color: rgba(255, 255, 255, .65); font-size: 1.0625rem; }
@@ -64,6 +64,7 @@ body[data-page="home"] #topbar { color: #fff; }
 .example-text ol { margin: 0 0 1.5rem; padding-left: 1.375rem; color: rgba(255, 255, 255, .85); display: grid; gap: 0.375rem; }
 .example-text li::marker { color: #6ec6ff; font-weight: 700; }
 .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.125rem; }
+@media (min-width: 150rem) { .features { grid-template-columns: repeat(6, 1fr); } }
 .feature { padding: 1.625rem; border-radius: 1.375rem; background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02)); border: 1px solid rgba(255, 255, 255, .1); transition: transform .2s, border-color .2s; }
 .feature:hover { transform: translateY(-0.25rem); border-color: rgba(110, 198, 255, .5); }
 .feature .ico { font-size: 1.75rem; margin-bottom: 0.875rem; } .feature h4 { font-size: 1.125rem; margin-bottom: 0.5rem; } .feature p { margin: 0; color: rgba(255, 255, 255, .65); font-size: 0.9062rem; }
@@ -76,11 +77,11 @@ body[data-page="home"] #topbar { color: #fff; }
 .band { margin: 5.625rem 1.5rem 0; padding: 4.375rem 1.5rem; text-align: center; border-radius: 2rem; color: #fff; background: radial-gradient(60% 120% at 0% 100%, rgba(255, 61, 113, .45), transparent 70%), radial-gradient(60% 120% at 100% 100%, rgba(25, 211, 232, .45), transparent 70%), #0a0b0f; border: 1px solid rgba(255, 255, 255, .1); display: grid; gap: 1.625rem; justify-items: center; }
 .band h2 { font-size: clamp(1.75rem, 4vw, 2.875rem); font-weight: 800; letter-spacing: -1px; }
 .footer { margin-top: 5.625rem; padding: 3.5rem 1.75rem 1.625rem; color: #fff; border-top: 1px solid rgba(255, 255, 255, .1); background: #050507; }
-.footer-grid { max-width: 73.75rem; margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 1.875rem; }
+.footer-grid { max-width: var(--land); margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 1.875rem; }
 .footer h5 { margin: 0 0 0.75rem; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255, 255, 255, .5); }
 .footer a { display: block; padding: 0.25rem 0; color: rgba(255, 255, 255, .8); } .footer a:hover { color: #6ec6ff; }
 .footer .fine { text-align: left; margin: 0.625rem 0 0; }
-.footer-bottom { max-width: 73.75rem; margin: 2.25rem auto 0; color: rgba(255, 255, 255, .4); font-size: 0.8125rem; }
+.footer-bottom { max-width: var(--land); margin: 2.25rem auto 0; color: rgba(255, 255, 255, .4); font-size: 0.8125rem; }
 
 @media (max-width: 900px) {
   .example, .example.flip { grid-template-columns: 1fr; gap: 1.625rem; } .example.flip .example-art { order: 0; }

@@ -136,11 +136,12 @@ export default {
     let cur = (r.param && flat.find((i) => i.id === r.param)) || flat[0];
     const side = h('aside', { class: 'help-side' });
     const main = h('article', { class: 'help-main' });
+    const toc = h('aside', { class: 'help-toc' });
     const search = h('input', { class: 'input', placeholder: 'Пошук у довідці…' });
     const open = (id, push = true) => {
       cur = flat.find((i) => i.id === id) || flat[0];
       if (push) history.replaceState(null, '', `#/help/${cur.id}`);
-      paintSide(); paintMain(); window.scrollTo(0, 0);
+      paintSide(); paintMain(); paintToc(); window.scrollTo(0, 0);
     };
     function paintSide() {
       const q = search.value.trim().toLowerCase();
@@ -151,13 +152,20 @@ export default {
           items.map((i) => h('button', { class: `help-item${i.id === cur.id ? ' on' : ''}`, onclick: () => open(i.id) }, i.title)));
       }));
     }
+    // права панель на широких екранах: інші статті цього розділу й швидкі переходи — щоб праворуч від тексту не було порожнього місця
+    function paintToc() {
+      toc.replaceChildren(h('div', { class: 'help-cat-title' }, `${cur.sec.icon} У цьому розділі`),
+        ...cur.sec.items.map((i) => h('button', { class: `help-item${i.id === cur.id ? ' on' : ''}`, onclick: () => open(i.id) }, i.title)),
+        h('div', { class: 'help-cat-title help-toc-gap' }, 'Швидкі переходи'),
+        h('a', { class: 'help-item', href: '#/stego' }, 'Відкрити «Стего»'), h('a', { class: 'help-item', href: '#/projects' }, 'Мої проєкти'), h('a', { class: 'help-item', href: '#/analysis' }, 'Стегоаналіз фото'));
+    }
     function paintMain() {
       const idx = flat.indexOf(cur), prev = flat[idx - 1], next = flat[idx + 1];
       main.replaceChildren(h('div', { class: 'help-crumb' }, `${cur.sec.icon} ${cur.sec.title}`), h('h1', {}, cur.title), h('div', { class: 'help-body' }, ...cur.body()),
         h('div', { class: 'help-nav' }, prev ? h('button', { class: 'btn ghost', onclick: () => open(prev.id) }, '← ' + prev.title) : h('span'), next ? h('button', { class: 'btn ghost', onclick: () => open(next.id) }, next.title + ' →') : h('span')));
     }
     search.oninput = paintSide;
-    paintSide(); paintMain();
-    root.append(h('div', { class: 'help-page' }, side, main));
+    paintSide(); paintMain(); paintToc();
+    root.append(h('div', { class: 'help-page' }, side, h('div', { class: 'help-content' }, main, toc)));
   },
 };

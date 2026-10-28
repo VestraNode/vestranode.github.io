@@ -277,9 +277,23 @@ export const DEFAULT_SCALE = 0.714;                       // ≈ «браузе�
 export const uiScale = () => (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16;
 export function setScale(v) { store.set('scale', Math.min(1.3, Math.max(0.6, v))); applyAppearance(); }
 
+/** Автомасштаб за розміром вікна: на екранах більших за Full HD (2K, 4K, ultrawide) інтерфейс пропорційно росте, а не лишається крихітним.
+ *  Опорний розмір — вікно 1920×960 (Full HD з рядком браузера); менші вікна не зменшуються. Крок 5 %, щоб розмітка не «тремтіла» при зміні розміру. */
+export function autoFactor() {
+  if ((store.get('prefs', {}) || {}).autoscale === false) return 1;
+  const f = Math.min(innerWidth / 1920, innerHeight / 960);
+  return Math.min(2.5, Math.max(1, Math.round(f * 20) / 20));
+}
+const rootPx = () => `${(16 * store.get('scale', DEFAULT_SCALE) * autoFactor()).toFixed(3)}px`;
+let rescaleTimer = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(rescaleTimer);
+  rescaleTimer = setTimeout(() => { if (document.documentElement.style.fontSize !== rootPx()) document.documentElement.style.fontSize = rootPx(); }, 120);
+});
+
 export function applyAppearance() {
   const theme = store.get('theme', 'dark'), accent = store.get('accent', '#7c9cff');
-  document.documentElement.style.fontSize = `${16 * store.get('scale', DEFAULT_SCALE)}px`;
+  document.documentElement.style.fontSize = rootPx();
   document.documentElement.dataset.theme = theme;
   const [r, g, b] = hexToRgb(accent);
   const root = document.documentElement.style;

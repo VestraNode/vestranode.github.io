@@ -1,5 +1,5 @@
 // editor.js — редактор нод: полотно, ноди, порти за типом, з'єднання, виділення, меню, палітра, інспектор, undo/redo
-import { h, $, $$, select, toast, contextMenu, closeCtx, debounce, store, uiScale } from './core.js';
+import { h, $, $$, select, toast, contextMenu, closeCtx, debounce, store, uiScale, autoFactor } from './core.js';
 import { searchField } from './icons.js';
 
 const NODE_W = 232;
@@ -15,7 +15,7 @@ export class NodeEditor {
     this.byType = Object.fromEntries(this.defs.nodes.map((n) => [n.id, n]));
     this.cat = Object.fromEntries(this.defs.categories.map((c) => [c.id, c]));
     this.types = this.defs.types;
-    this.sel = new Set(); this.selEdge = null; this.view = this.graph.view || { x: 0, y: 0, zoom: 1 };
+    this.sel = new Set(); this.selEdge = null; this.view = this.graph.view || { x: 0, y: 0, zoom: Math.max(1, autoFactor()) };
     this.nodeEls = new Map(); this.ports = new Map(); this.portOff = new Map(); this.hist = []; this.future = [];
     this.build();
   }
@@ -108,7 +108,7 @@ export class NodeEditor {
   }
   zoomBy(f, cx, cy) {
     const r = this.board.getBoundingClientRect(); cx = cx ?? r.left + r.width / 2; cy = cy ?? r.top + r.height / 2;
-    const z = Math.min(2, Math.max(0.3, this.view.zoom * f)), k = z / this.view.zoom, bx = cx - r.left, by = cy - r.top;
+    const z = Math.min(2 * Math.max(1, autoFactor()), Math.max(0.3, this.view.zoom * f)), k = z / this.view.zoom, bx = cx - r.left, by = cy - r.top;
     this.view.x = bx - (bx - this.view.x) * k; this.view.y = by - (by - this.view.y) * k; this.view.zoom = z; this.applyView();
   }
   fit() {

@@ -3,7 +3,7 @@ import { h, store, setTheme, setAccent, setScale, DEFAULT_SCALE, toast, confirmD
 
 const SWATCHES = ['#7c9cff', '#5fd68a', '#ffb454', '#ff6b9a', '#b48cff', '#4dd0e1', '#ff7a59', '#e8e8e8'];
 
-export const getPrefs = () => ({ snap: true, autosave: true, anim: true, hints: true, ...store.get('prefs', {}) });
+export const getPrefs = () => ({ snap: true, autosave: true, anim: true, hints: true, autoscale: true, ...store.get('prefs', {}) });
 export function setPref(key, value) { store.set('prefs', { ...getPrefs(), [key]: value }); document.documentElement.classList.toggle('no-anim', !getPrefs().anim); }
 
 function row(title, desc, control) { return h('div', { class: 'setting' }, h('div', {}, h('h4', {}, title), desc && h('p', {}, desc)), control); }
@@ -43,7 +43,8 @@ export default {
         h('div', { class: 'card' },
           row('Тема', 'За замовчуванням темна. Перемикати можна й у меню аватара.', theme),
           row('Допоміжний колір', 'Колір кнопок, виділень і акцентів у всьому інтерфейсі.', swatches),
-          row('Масштаб інтерфейсу', 'Розмір усього сайту (типово 71 %, тобто менший у 1,4 раза за 100 %).', scaleCtl)),
+          row('Масштаб інтерфейсу', 'Розмір усього сайту (типово 71 %, тобто менший у 1,4 раза за 100 %).', scaleCtl),
+          row('Автомасштаб під екран', 'На великих екранах (2K, 4K, ultrawide) інтерфейс сам збільшується пропорційно розміру вікна, щоб не виглядав крихітним.', sw('autoscale', () => applyAppearance()))),
         h('div', { class: 'card' },
           row('Анімації', 'Рухомі фони, пульсація чанків, плавні переходи.', sw('anim', (v) => document.documentElement.classList.toggle('no-anim', !v))),
           row('Автозбереження проєкту', 'Редактор нод зберігає зміни на сервері сам, ~1,5 с після правки.', sw('autosave')),
