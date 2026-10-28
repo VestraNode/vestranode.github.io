@@ -12,6 +12,7 @@ export default {
     if (r.query.error) toast(r.query.error, 'error', 9000);
     const pub = state.pub || {};
     const prov = pub.providers || {};
+    const known = !backend.down && Object.keys(prov).length > 0;      // без зв'язку з сервером невідомо, що налаштовано — підпис «не налаштовано» не показуємо
     let mode = r.query.tab === 'register' ? 'register' : 'login';
 
     const email = h('input', { class: 'input', type: 'email', placeholder: 'ваша@пошта.com', autocomplete: 'email' });
@@ -47,7 +48,7 @@ export default {
 
     const oauth = (id, cls, icon, label) => (prov[id]
       ? h('a', { class: `btn ${cls} block`, href: '#', onclick: (e) => { e.preventDefault(); location.href = oauthUrl(id); } }, h('span', { html: icon }), label)
-      : h('button', { class: `btn ${cls} block`, disabled: true, title: 'Цей спосіб входу ще не налаштований на сервері' }, h('span', { html: icon }), label + ' (не налаштовано)'));
+      : h('button', { class: `btn ${cls} block`, disabled: true, title: known ? 'Цей спосіб входу ще не налаштований на сервері' : 'Немає зв\'язку з сервером' }, h('span', { html: icon }), known ? label + ' (не налаштовано)' : label));
 
     paint();
     root.append(h('div', { class: 'auth-page' }, h('div', { class: 'auth-card' },
