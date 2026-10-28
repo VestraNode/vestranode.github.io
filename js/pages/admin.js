@@ -190,9 +190,10 @@ export default {
       const note = h('input', { class: 'input', placeholder: 'Нотатка (бачите лише ви)', value: v.note || '' });
       const off = h('input', { type: 'checkbox', checked: !!v.disabled });
       const rowPax = h('label', { class: 'field' }, h('span', {}, 'Скільки пакселів дає'), paxels);
-      const rowPrem = h('div', { class: 'stack-sm' }, h('label', { class: 'field' }, h('span', {}, 'Текст преміуму'), text), h('label', { class: 'check' }, freePy, h('span', {}, 'Безкоштовна генерація .py')));
+      const rowPrem = h('label', { class: 'field' }, h('span', {}, 'Текст після «ПРЕМІУМ»'), text);
+      const rowFree = h('label', { class: 'check span2' }, freePy, h('span', {}, 'Безкоштовна генерація .py'));
       const sync = () => {
-        rowPax.hidden = type.value !== 'paxels'; rowPrem.hidden = type.value !== 'premium';
+        rowPax.hidden = type.value !== 'paxels'; rowPrem.hidden = rowFree.hidden = type.value !== 'premium';
         untilLabel.textContent = type.value === 'premium' ? 'Преміум діє до (обов’язково)' : 'Можна активувати до (порожньо — без терміну)';
       };
       type.onchange = sync; sync();
@@ -203,14 +204,17 @@ export default {
         await api(edit ? '/api/admin/promos/' + encodeURIComponent(v.code) : '/api/admin/promos', { method: edit ? 'PATCH' : 'POST', json });
         toast(edit ? 'Промокод збережено.' : 'Промокод створено.', 'ok'); box._close(null); show('promos');
       };
-      const content = h('div', { class: 'stack-sm promo-form' },
-        h('label', { class: 'field' }, h('span', {}, 'Код'), code), h('label', { class: 'field' }, h('span', {}, 'Тип'), type), rowPax, rowPrem,
+      const content = h('div', { class: 'promo-form' },
+        h('label', { class: 'field span2' }, h('span', {}, 'Код'), code),
+        h('label', { class: 'field' }, h('span', {}, 'Тип'), type), rowPax, rowPrem, rowFree,
         h('label', { class: 'field' }, untilLabel, until),
-        h('label', { class: 'field' }, h('span', {}, 'Скільки разів можна активувати всього'), max), h('label', { class: 'field' }, h('span', {}, 'Нотатка'), note),
-        h('label', { class: 'check' }, off, h('span', {}, 'Вимкнено (код не працює, але не видаляється)')),
-        h('div', { class: 'row-gap' }, h('button', { class: 'btn', onclick: save }, edit ? 'Зберегти' : 'Створити'), h('small', { class: 'fine-note' }, 'Кожен користувач може активувати код лише раз.')));
+        h('label', { class: 'field' }, h('span', {}, 'Скільки разів можна активувати всього'), max),
+        h('label', { class: 'field span2' }, h('span', {}, 'Нотатка'), note),
+        h('label', { class: 'check span2' }, off, h('span', {}, 'Вимкнено (код не працює, але не видаляється)')),
+        h('div', { class: 'promo-foot span2' }, h('button', { class: 'btn', onclick: save }, edit ? 'Зберегти' : 'Створити'),
+          h('small', { class: 'fine-note' }, 'Кожен користувач може активувати код лише раз.')));
       modal({ title: edit ? `Промокод ${v.code}` : 'Новий промокод', content, actions: [{ label: 'Закрити', value: null }] });
-      box = document.querySelector('#modal-root .modal:last-child');
+      box = document.querySelector('#modal-root .modal:last-child'); box.classList.add('promo-box');
     }
 
     async function promoUses(p) {
