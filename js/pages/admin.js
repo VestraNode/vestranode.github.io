@@ -1,10 +1,11 @@
 // admin.js — адмін-панель: огляд, користувачі (пакселі, преміум, блокування…), активність, архів операцій (30 днів), платежі, помилки
-import { h, api, toast, modal, confirmDialog, promptDialog, fmtInt, fmtDate, fmtBytes, authUrl, assetUrl, debounce } from '../core.js';
+import { h, api, state, toast, modal, confirmDialog, promptDialog, fmtInt, fmtDate, fmtBytes, authUrl, assetUrl, debounce } from '../core.js';
 import { triggerDownload } from '../parts.js';
 import { searchField } from '../icons.js';
 
 const KIND = { encode: 'Кодування', decode: 'Декодування' };
 const ORIGIN = { stego: 'Стего', project: 'Проєкт' };
+const KIND_LABEL = { own: 'власний', export: 'експорт', bought: 'куплений .py', received: 'отриманий' };
 const PAY = { created: 'очікує', success: 'оплачено', failure: 'відхилено', expired: 'прострочено' };
 const PROMO_STATE = { active: ['активний', ''], disabled: ['вимкнено', 'dim'], expired: ['прострочено', 'bad'], exhausted: ['вичерпано', 'gold'] };
 const el = (tag, cls, ...kids) => h(tag, { class: cls }, ...kids);
@@ -19,7 +20,7 @@ const prettyBytes = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} МБ` : 
 export default {
   mount(root) {
     const body = h('div', { class: 'admin-body' });
-    const tabs = [['overview', '📈 Огляд'], ['users', '👥 Користувачі'], ['activity', '🧾 Активність'], ['ops', '🗂 Архів (30 днів)'], ['payments', '💳 Платежі'], ['promos', '🎟 Промокоди'], ['pyorders', '🐍 Коди .py'], ['config', '⚙ Налаштування'], ['logs', '⚠ Помилки']];
+    const tabs = [['overview', '📈 Огляд'], ['users', '👥 Користувачі'], ['projects', '📁 Проєкти'], ['activity', '🧾 Активність'], ['ops', '🗂 Архів (30 днів)'], ['payments', '💳 Платежі'], ['promos', '🎟 Промокоди'], ['pyorders', '🐍 Коди .py'], ['config', '⚙ Налаштування'], ['logs', '⚠ Помилки']];
     const seg = h('div', { class: 'seg admin-seg' });
     let tab = sessionStorage.getItem('admin-tab') || 'overview';
     const show = async (id) => {
@@ -74,7 +75,7 @@ export default {
       const premPy = h('input', { type: 'checkbox', checked: u.premium.free_py });
       const note = h('textarea', { class: 'textarea', rows: 2, placeholder: 'Нотатка адміна (бачать лише адміни)' }); note.value = u.note || '';
       const project = (p) => h('tr', {}, h('td', {}, `#${p.id}`), h('td', {}, h('b', {}, p.name), p.kind && p.kind !== 'own' && h('span', { class: 'tag dim' }, p.kind)), h('td', {}, p.nodes), h('td', {}, fmtDate(p.updated_at)),
-        h('td', { class: 'acts' }, h('button', { class: 'btn ghost small', onclick: async () => { const g = await api('/api/admin/projects/' + p.id); modal({ title: `Проєкт «${g.name}»`, content: h('pre', { class: 'json-box' }, JSON.stringify(g.graph, null, 2)), actions: [{ label: 'Закрити', value: null }] }); } }, 'Граф'),
+        h('td', { class: 'acts' }, h('button', { class: 'btn ghost small', onclick: () => openProjectViewer(p.id, p.name) }, '👁 Граф'),
           h('button', { class: 'btn ghost small', onclick: () => triggerDownload(`/api/admin/projects/${p.id}/export.vnp`) }, '⬇ .vnp'),
           h('button', { class: 'btn danger small', onclick: async () => { if (await confirmDialog('Видалити проєкт?', `«${p.name}» буде видалено.`, 'Видалити', true)) { await api('/api/admin/projects/' + p.id, { method: 'DELETE' }); toast('Видалено.', 'ok'); await reload(); } } }, '🗑')));
       const content = h('div', { class: 'user-sheet' },
@@ -123,7 +124,7 @@ export default {
         h('figcaption', {}, f.name, ' · ', prettyBytes(f.size), ' · ', h('a', { href: authUrl(`/api/admin/ops/${id}/file/${f.name}?download=1`) }, 'завантажити'))));
       modal({ title: `${KIND[o.kind] || o.kind} · ${o.email || '#' + o.user_id}`, content: h('div', { class: 'op-view' },
         h('div', { class: 'kv-list' }, h('div', {}, h('span', {}, 'Користувач'), h('b', {}, `${o.user_name || ''} (${o.email || '#' + o.user_id})`)), h('div', {}, h('span', {}, 'Коли'), h('b', {}, fmtDate(o.created_at))),
-          h('div', {}, h('span', {}, 'Звідки / версія'), h('b', {}, `${ORIGIN[o.origin] || o.origin} · ${o.version}${o.project_id ? ' · проєкт #' + o.project_id : ''}`)), h('div', {}, h('span', {}, 'Параметри'), h('b', {}, Object.entries(o.params).map(([k, v]) => `${k}=${v}`).join(', ') || '—')),
+          h('div', {}, h('span', {}, 'Звідки / версія'), h('b', {}, `${ORIGIN[o.origin] || o.origin} · ${o.version}${o.project_id ? ' · проєкт ' + o.project_id : ''}`)), h('div', {}, h('span', {}, 'Параметри'), h('b', {}, Object.entries(o.params).map(([k, v]) => `${k}=${v}`).join(', ') || '—')),
           h('div', {}, h('span', {}, 'Видалиться'), h('b', {}, fmtDate(o.expires_at)))),
         imgs.length ? h('div', { class: 'op-figs' }, imgs) : h('p', { class: 'fine-note' }, 'Файли не збережено (результат не завантажували або файл завеликий).'),
         h('h4', {}, `${o.kind === 'decode' ? 'Розкодований текст' : 'Текст, який ховали'} (${fmtInt(o.text_len)} символів)`), h('pre', { class: 'json-box' }, o.text || '—'),
@@ -250,7 +251,7 @@ export default {
         list.replaceChildren(table(['Ключ', 'Користувач', 'Проєкт', 'Нод', 'Ціна', 'Статус', 'Оплат', 'Створено', 'Оновлено', 'Оплачено', ''], d.items.map((o) => h('tr', {},
           h('td', {}, h('button', { class: 'linkish mono', title: 'Скопіювати ключ', onclick: () => { navigator.clipboard?.writeText(o.key); toast('Ключ скопійовано.', 'ok'); } }, o.key_pretty)),
           h('td', {}, o.email ? h('a', { href: '#', onclick: (e) => { e.preventDefault(); openUser(o.user_id); } }, o.email) : `#${o.user_id}`),
-          h('td', {}, o.project_name ? `#${o.project_id} · ${o.project_name}` : `#${o.project_id} (видалено)`), h('td', {}, o.nodes), h('td', {}, `${o.price_uah} ₴ · ${o.stars} ★`),
+          h('td', {}, o.project_name ? `${o.project_name} · ${o.project_id}` : `${o.project_id} (видалено)`), h('td', {}, o.nodes), h('td', {}, `${o.price_uah} ₴ · ${o.stars} ★`),
           h('td', {}, h('span', { class: `tag ${o.status === 'paid' ? 'gold' : 'dim'}` }, o.status === 'paid' ? 'оплачено' : o.paid_count ? 'змінено, чекає оплати' : 'очікує оплати')),
           h('td', {}, o.paid_count || 0), h('td', {}, fmtDate(o.created_at)), h('td', {}, fmtDate(o.updated_at)),
           h('td', { title: o.charge_id ? `Платіж: ${o.charge_id}` : '' }, o.paid_at ? fmtDate(o.paid_at) + (o.tg_user_id ? ` · tg ${o.tg_user_id}` : '') : '—'),
@@ -278,13 +279,62 @@ export default {
         }));
     }
 
+
+    // ------------------------------------------------------------- проєкти (усі, з переглядом графа)
+    /** Перегляд будь-якого проєкту: той самий редактор нод у режимі «лише читання» (без збереження змін). */
+    async function openProjectViewer(id, name) {
+      const [g, defs] = await Promise.all([api('/api/admin/projects/' + id), state.nodeDefs ? Promise.resolve(state.nodeDefs) : api('/api/nodes')]);
+      state.nodeDefs = defs;
+      const { NodeEditor } = await import('../editor.js');
+      const editor = new NodeEditor({ defs, graph: g.graph, onChange() {}, readonly: true, prefs: {} });
+      const holder = h('div', { class: 'admin-viewer' }, editor.el);
+      const done = modal({ title: `${g.name || name} · ${g.email || '#' + g.user_id}`, content: h('div', {}, h('small', { class: 'fine-note' }, `Хеш проєкту: ${g.id} · вид: ${KIND_LABEL[g.kind] || g.kind} · нод: ${g.graph.nodes.length} · лише перегляд`), holder),
+        actions: [{ label: '⬇ .vnp', value: 'vnp' }, { label: 'Закрити', value: null }] });
+      const box = document.querySelector('#modal-root .modal:last-child'); box?.classList.add('viewer');
+      editor.initHistory?.();
+      requestAnimationFrame(() => { editor.renderAll(); editor.fit(); editor.renderAll(); });
+      const v = await done;
+      editor.destroy();
+      if (v === 'vnp') triggerDownload(`/api/admin/projects/${id}/export.vnp`);
+    }
+
+    async function projectsView() {
+      const q = h('input', { class: 'input', placeholder: 'Назва, пошта власника або хеш проєкту…' });
+      const seg2 = h('div', { class: 'seg' }), info = h('small', { class: 'fine-note' }), list = h('div', {}), more = h('button', { class: 'btn ghost', hidden: true }, 'Показати ще');
+      let kind = '', rows = [], total = 0;
+      const KINDS = [['', 'Усі'], ['own', 'Власні'], ['export', 'Експорт'], ['bought', 'Куплені .py'], ['received', 'Отримані']];
+      const paint = () => {
+        info.textContent = `Знайдено: ${fmtInt(total)}`;
+        more.hidden = rows.length >= total;
+        list.replaceChildren(table(['Хеш', 'Назва', 'Власник', 'Вид', 'Нод', 'Створено', 'Змінено', ''], rows.map((p) => h('tr', {},
+          h('td', {}, h('button', { class: 'linkish mono', title: 'Скопіювати хеш', onclick: () => { navigator.clipboard?.writeText(p.id); toast('Хеш скопійовано.', 'ok'); } }, p.id)),
+          h('td', {}, h('b', {}, p.name)),
+          h('td', {}, p.email ? h('a', { href: '#', onclick: (e) => { e.preventDefault(); openUser(p.user_id); } }, p.email) : `#${p.user_id}`),
+          h('td', {}, h('span', { class: `tag ${p.kind === 'own' ? 'dim' : 'gold'}` }, KIND_LABEL[p.kind] || p.kind)), h('td', {}, p.nodes), h('td', {}, fmtDate(p.created_at)), h('td', {}, fmtDate(p.updated_at)),
+          h('td', { class: 'acts' }, h('button', { class: 'btn small', onclick: () => openProjectViewer(p.id, p.name) }, '👁 Переглянути'),
+            h('button', { class: 'btn ghost small', onclick: () => triggerDownload(`/api/admin/projects/${p.id}/export.vnp`) }, '⬇ .vnp'),
+            h('button', { class: 'btn danger small', onclick: async () => { if (await confirmDialog('Видалити проєкт?', `«${p.name}» (${p.email || '#' + p.user_id}) буде видалено без відновлення.`, 'Видалити', true)) { await api('/api/admin/projects/' + p.id, { method: 'DELETE' }); toast('Видалено.', 'ok'); load(true); } } }, '🗑')))),
+          'Проєктів не знайдено.'));
+      };
+      const load = async (reset) => {
+        if (reset) rows = [];
+        seg2.replaceChildren(...KINDS.map(([v, l]) => h('button', { class: kind === v ? 'on' : '', onclick: () => { kind = v; load(true); } }, l)));
+        const d = await api(`/api/admin/projects?limit=60&offset=${rows.length}&kind=${kind}&q=${encodeURIComponent(q.value.trim())}`);
+        rows = rows.concat(d.items); total = d.total; paint();
+      };
+      q.oninput = debounce(() => load(true), 300); more.onclick = () => load(false);
+      await load(true);
+      return h('div', { class: 'card' }, h('p', { class: 'fine-note' }, 'Усі проєкти системи. «Переглянути» відкриває граф у редакторі лише для читання; номери проєктів скрізь — хеші.'),
+        h('div', { class: 'row-gap' }, searchField(q), seg2), info, list, h('div', { class: 'row-gap', style: { justifyContent: 'center', marginTop: '10px' } }, more));
+    }
+
     async function logs() {
       const d = await api('/api/admin/logs?limit=150');
       return h('div', { class: 'card' }, table(['Час', 'Рівень', 'Джерело', 'Повідомлення', 'Шлях', 'IP'], d.items.map((l) => h('tr', {}, h('td', {}, fmtDate(l.ts)),
         h('td', {}, h('span', { class: `tag ${l.level === 'error' ? 'bad' : 'gold'}` }, l.level)), h('td', {}, l.source), h('td', { class: 'ellip wide' }, l.message), h('td', {}, l.path || ''), h('td', {}, l.ip || ''))), 'Помилок не було.'));
     }
 
-    const VIEWS = { overview, users, activity, ops, payments, promos, pyorders, config: configView, logs };
+    const VIEWS = { overview, users, projects: projectsView, activity, ops, payments, promos, pyorders, config: configView, logs };
     root.append(h('div', { class: 'page admin-page' }, h('div', { class: 'page-head' }, h('div', {}, h('h1', {}, '🛡 Адмін-панель'), h('div', { class: 'sub' }, 'Користувачі, пакселі, проєкти та архів операцій')), seg), body));
     show(VIEWS[tab] ? tab : 'overview');
   },

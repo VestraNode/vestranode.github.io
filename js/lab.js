@@ -120,9 +120,10 @@ export class Lab {
     this.opts = opts;
     this.term = opts.terminal;
     const prefs = store.get('lab', {});
-    this.s = { gradient: 'viridis', norm: 'image', view: 'noise', stegView: 'neighbors', chartRange: 'full', chartColor: 'height', blink: '#ff2bd6', ...prefs };
+    this.s = { gradient: 'viridis', norm: 'image', view: 'noise', stegView: 'neighbors', stegView2: 'lsb', chartRange: 'full', chartColor: 'height', blink: '#ff2bd6', ...prefs };
     this.data = { photo: null, analysis: null, enc: null, dec: null, hasText: false, threshold: 8, mode: opts.mode || 'encode', encError: null, decError: null, stale: false };
     this.stegViews = []; this.steg = { before: null, after: null, encId: null, view: null, loading: false, error: null };
+    this.steg2 = { url: null, view: null, error: null };     // другий вигляд (4-й блок у режимі «Стегоаналіз»)
     this.seq = { steg: 0 }; this.layers = null; this.raf = 0; this.pulseStart = performance.now(); this.analysisVer = 0; this.chartCache = null;
     this.el = this.build();
     this.ro = new ResizeObserver(() => this.drawChart()); this.ro.observe(this.chartWrap);
@@ -140,12 +141,13 @@ export class Lab {
     this.gradSel = select(Object.entries(GRADIENTS).map(([id, g]) => [id, g.name]), this.s.gradient, (v) => { this.s.gradient = v; this.persist(); this.render(); this.refreshSteg(true); });
     this.normSel = select([['image', 'за максимумом фото'], ['max', 'за теор. максимумом']], this.s.norm, (v) => { this.s.norm = v; this.persist(); this.render(); });
     this.stegSel = select([['neighbors', 'Відхилення від сусідів']], this.s.stegView, (v) => { this.s.stegView = v; this.persist(); this.refreshSteg(); });
+    this.stegSel2 = select([['lsb', 'Молодший біт (LSB)']], this.s.stegView2, (v) => { this.s.stegView2 = v; this.persist(); this.refreshSteg2(); });
     this.viewSeg = h('div', { class: 'seg' });
     this.blink = h('input', { type: 'color', class: 'round', value: this.s.blink, title: 'Колір мигання', oninput: (e) => { this.s.blink = e.target.value; this.persist(); this.layers = null; this.paintGrid(); } });
     this.termBtn = h('button', { class: 'btn ghost small', onclick: () => this.term?.toggle() }, '▮ Термінал');
     const tf = (label, el) => h('div', { class: 'tb-field' }, h('small', {}, label), el);
     this.toolbar = h('div', { class: 'lab-toolbar' }, tf('Градієнт', this.gradSel), tf('Нормалізація кольору', this.normSel), tf('Перегляд сітки', this.viewSeg),
-      tf('Стегоаналіз (фото 3 і 4)', this.stegSel), tf('Колір мигання', this.blink), tf(' ', this.termBtn));
+      this.tf1 = tf('Стегоаналіз (фото 3 і 4)', this.stegSel), this.tf2 = tf('Другий вигляд (фото 4)', this.stegSel2), tf('Колір мигання', this.blink), tf(' ', this.termBtn));
 
     this.statsBox = h('div', { class: 'lab-stats' });
     this.chartWrap = h('div', { class: 'lab-chart-wrap' }, this.cv = h('canvas'), this.tip = h('div', { class: 'lab-tip', hidden: true }));
@@ -163,7 +165,7 @@ export class Lab {
     return root;
   }
 
-  persist() { store.set('lab', { gradient: this.s.gradient, norm: this.s.norm, stegView: this.s.stegView, chartRange: this.s.chartRange, chartColor: this.s.chartColor, blink: this.s.blink }); }
+  persist() { store.set('lab', { gradient: this.s.gradient, norm: this.s.norm, stegView: this.s.stegView, stegView2: this.s.stegView2, chartRange: this.s.chartRange, chartColor: this.s.chartColor, blink: this.s.blink }); }
 
   async loadViews() {
     try {
@@ -171,10 +173,30 @@ export class Lab {
       this.stegViews = d.views;
       if (!this.stegViews.some((v) => v.id === this.s.stegView)) this.s.stegView = 'neighbors';
       this.stegSel.setOptions(this.stegViews.map((v) => [v.id, v.name])); this.stegSel.value = this.s.stegView;
+      const single = this.stegViews.filter((v) => !v.pair);
+      if (!single.some((v) => v.id === this.s.stegView2)) this.s.stegView2 = single.find((v) => v.id !== this.s.stegView)?.id || 'lsb';
+      this.stegSel2.setOptions(single.map((v) => [v.id, v.name])); this.stegSel2.value = this.s.stegView2;
       this.render(); this.refreshSteg();
     } catch { /* без списку лишаємо типовий вигляд */ }
   }
   stegInfo() { return this.stegViews.find((v) => v.id === this.s.stegView) || null; }
+  stegInfo2() { return this.stegViews.find((v) => v.id === this.s.stegView2) || null; }
+
+  /** Другий вигляд для 4-го блока в режимі «Стегоаналіз» (поруч із першим можна порівняти, напр., LSB і хі-квадрат). */
+  async refreshSteg2(force) {
+    const { photo, mode } = this.data, sv = this.stegInfo2();
+    if (mode !== 'analysis' || !photo?.id || !sv || sv.pair) { this.steg2 = { url: null, view: null, error: null }; this.renderCards(); return; }
+    const seq = this.seq.steg2 = (this.seq.steg2 || 0) + 1;
+    try {
+      const d = await api('/api/lab/steg', { method: 'POST', json: { id: photo.id, view: this.s.stegView2, threshold: this.data.threshold, gradient_id: this.s.gradient, stops: GRADIENTS[this.s.gradient].stops }, silent: true });
+      if (seq !== this.seq.steg2) return;
+      this.steg2 = { url: authUrl(d.before_url), view: d.view, error: null };
+    } catch (e) {
+      if (seq !== this.seq.steg2) return;
+      this.steg2 = { url: null, view: null, error: e.message };
+    }
+    this.renderCards();
+  }
 
   // ------------------------------------------------------------- дані
   set(patch) {
@@ -183,7 +205,8 @@ export class Lab {
     if ('analysis' in patch && patch.analysis !== prevAn) { this.analysisVer++; this.layers = null; this.chartCache = null; }
     if ('enc' in patch || 'dec' in patch) { this.layers = null; this.pulseStart = performance.now(); }
     this.render();
-    if ('photo' in patch || 'enc' in patch || 'analysis' in patch) this.refreshSteg();
+    if ('photo' in patch || 'enc' in patch || 'analysis' in patch) { this.refreshSteg(); if (this.data.mode === 'analysis') this.refreshSteg2(); }
+    if ('mode' in patch) this.refreshSteg2();
   }
 
   usedCells() {
@@ -196,6 +219,7 @@ export class Lab {
   // ------------------------------------------------------------- стегоаналіз (3 і 4)
   async refreshSteg(force) {
     const { photo, enc, mode } = this.data;
+    if (force && mode === 'analysis') this.refreshSteg2(true);       // змінився градієнт чи поріг — другий вигляд теж
     if (!photo?.id || !this.stegInfo()) { this.steg = { before: null, after: null, encId: null, view: null, loading: false, error: null }; this.render(); return; }
     const seq = ++this.seq.steg, encId = mode === 'encode' && enc ? enc.enc_id : null;
     this.steg = { ...this.steg, loading: true, error: null }; this.renderCards();
@@ -217,6 +241,8 @@ export class Lab {
   renderToolbar() {
     const usedOk = !!this.usedCells();
     if (!usedOk && this.s.view === 'used') this.s.view = 'noise';
+    this.tf2.hidden = this.data.mode !== 'analysis';
+    this.tf1.querySelector('small').textContent = this.data.mode === 'analysis' ? 'Стегоаналіз (фото 3)' : 'Стегоаналіз (фото 3 і 4)';
     this.viewSeg.replaceChildren(...[['noise', 'Шумність'], ['used', 'Використані чанки']].map(([id, label]) =>
       h('button', { class: this.s.view === id ? 'on' : '', disabled: id === 'used' && !usedOk, onclick: () => { this.s.view = id; this.pulseStart = performance.now(); this.render(); } }, label)));
   }
@@ -260,7 +286,7 @@ export class Lab {
         else if (this.steg.error) this.frame(f4, `er:${this.steg.error}`, () => this.ph(this.steg.error, true));
         else this.frame(f4, 'w4', () => this.ph('Обчислення…'));
         $('.lab-cap', this.c4.card).textContent = `Змінено значень каналів: ${fmtInt(d.enc.stats.changed_values)}`;
-      } else this.frame(f4, 'e4', () => this.ph('Натисніть «Передперегляд»'));
+      } else this.frame(f4, 'e4', () => this.ph('Кодування ще не виконано — натисніть «Передперегляд» зліва, щоб побачити результат'));
     } else if (d.mode === 'decode') {
       $('h3', this.c4.card).textContent = 'Прихований текст (початок)';
       if (!p) this.frame(f4, 'd1', () => this.ph(needPhoto));
@@ -271,8 +297,13 @@ export class Lab {
         $('.lab-cap', this.c4.card).textContent = `${fmtInt(d.dec.text_chars)} символів · ${fmtInt(d.dec.text_bytes)} байт`;
       } else this.frame(f4, 'd2', () => this.ph('Натисніть «Розкодувати»'));
     } else {
-      $('h3', this.c4.card).textContent = 'Статистика фото';
-      this.frame(f4, 'an', () => this.ph(p ? 'Перегляд «після» не потрібен — змініть вигляд зліва, щоб бачити різні карти' : 'Потрібне фото'));
+      const sv2 = this.stegInfo2(), ready2 = this.steg2.view === this.s.stegView2;
+      $('h3', this.c4.card).textContent = 'Стегоаналіз — другий вигляд' + (sv2 ? ` · ${sv2.name}` : '');
+      $('.lab-cap', this.c4.card).textContent = sv2 ? sv2.desc : '';
+      if (!p) this.frame(f4, 'an0', () => this.ph(needPhoto));
+      else if (this.steg2.url && ready2) this.frame(f4, `img:${this.steg2.url}`, () => this.img(this.steg2.url));
+      else if (this.steg2.error) this.frame(f4, `er2:${this.steg2.error}`, () => this.ph(this.steg2.error, true));
+      else this.frame(f4, 'an-wait', () => this.ph('Обчислення…'));
     }
     this.stale.hidden = !d.stale;
   }

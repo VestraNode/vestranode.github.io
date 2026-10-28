@@ -99,7 +99,8 @@ export default {
       try {
         S.photo = await uploadPhoto(file); photo.set(S.photo);
         lab.set({ photo: S.photo }); await analyze();
-        if (S.mode === 'encode' && S.text) await runEncode(); else if (S.mode === 'decode') await runDecode();
+        if (S.mode === 'decode') await runDecode();       // кодування — лише за кнопкою «Передперегляд»
+        else if (S.text) term.add('info', 'Фото й текст готові. Натисніть «Передперегляд», щоб виконати кодування.', 'encode');
       } catch (e) { toast(e.message, 'error'); term.add('error', e.message, 'upload'); clearPhoto(false); } finally { busy(-1); }
     }
     function clearPhoto(rerender = true) {
@@ -173,7 +174,8 @@ export default {
       const f = textFile.files[0]; textFile.value = ''; if (!f) return;
       const t = await f.text(); text.value = t; S.text = t; S.textFile = { name: f.name };
       term.add('info', `Текст із файлу «${f.name}»: ${fmtInt([...t].length)} символів.`);
-      if (S.photo?.id) await runEncode(); else render();
+      render();                                          // текст завантажено; кодування запускає лише кнопка «Передперегляд»
+      if (S.mode === 'encode') term.add('info', S.photo?.id ? 'Текст завантажено. Натисніть «Передперегляд», щоб виконати кодування.' : 'Текст завантажено. Додайте фото й натисніть «Передперегляд».', 'encode');
     };
     [key].forEach((el) => el.addEventListener('input', () => { touched(); }));
     [px, py, pt, compress, optimize].forEach((el) => el.addEventListener('input', () => { store.set('stego_x', px.value); store.set('stego_y', py.value); touched(); reanalyze(); }));

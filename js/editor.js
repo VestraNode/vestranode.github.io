@@ -344,7 +344,7 @@ export class NodeEditor {
       this.temp = null; $$('.port.target', this.nodesLayer).forEach((x) => x.classList.remove('target'));
       const target = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.('.port');
       if (target && !(target.dataset.node === start.node && target.dataset.side === start.side && target.dataset.port === start.port)) {
-        this.tryConnect(start, { node: target.dataset.node, port: target.dataset.port, side: target.dataset.side });
+        if (!this.tryConnect(start, { node: target.dataset.node, port: target.dataset.port, side: target.dataset.side })) this.drawEdges();   // невдало — прибираємо «привид» лінії
       } else this.drawEdges();
     };
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);

@@ -156,7 +156,7 @@ export async function api(path, { method = 'GET', json, body, headers = {}, raw 
 }
 
 // ---------------------------------------------------------------- сповіщення (помилки — червоні)
-const ICONS = { error: '✖', ok: '✔', info: 'ℹ', warn: '⚠' };
+const ICONS = { error: '❗', ok: '✔', info: 'ℹ', warn: '⚠' };
 export function toast(message, kind = 'info', ms = 6500) {
   const root = $('#toasts');
   const el = h('div', { class: `toast ${kind}` }, h('span', { class: 'ico' }, ICONS[kind] || 'ℹ'),
@@ -292,7 +292,9 @@ window.addEventListener('resize', () => {
 });
 
 export function applyAppearance() {
-  const theme = store.get('theme', 'dark'), accent = store.get('accent', '#7c9cff');
+  // головна сторінка завжди темна: перемикання теми на ній нічого не змінює (збережена тема діє на решті сторінок)
+  const page = document.body?.dataset.page, isHome = page ? page === 'home' : /^#?\/?$/.test(location.hash);        // до першого маршруту сторінку визначаємо за адресою
+  const theme = isHome ? 'dark' : store.get('theme', 'dark'), accent = store.get('accent', '#7c9cff');
   document.documentElement.style.fontSize = rootPx();
   document.documentElement.dataset.theme = theme;
   const [r, g, b] = hexToRgb(accent);

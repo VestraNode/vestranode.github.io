@@ -1,5 +1,5 @@
 // projects.js — менеджер проєктів: власні (редагуються) та заблоковані: експорт, куплений .py, отриманий за посиланням
-import { h, api, toast, promptDialog, confirmDialog, fmtDate } from '../core.js';
+import { h, api, toast, modal, promptDialog, confirmDialog, fmtDate } from '../core.js';
 import { triggerDownload } from '../parts.js';
 import { go } from '../main.js';
 import { openShareModal } from '../share.js';
@@ -17,12 +17,28 @@ export default {
   async mount(root) {
     const grid = h('div', { class: 'projects' }, [1, 2, 3].map(() => h('div', { class: 'skeleton' })));
     const fileInput = h('input', { type: 'file', accept: '.vnp', hidden: true });
+    let usage = null;                                           // { count, max, premium, premium_max, premium_expired, can_create }
+    const counter = h('span', { class: 'chip limit-chip' });
+    const newBtn = h('button', { class: 'btn', onclick: () => guarded(create) }, '＋ Новий проєкт');
+    const importBtn = h('button', { class: 'btn ghost', onclick: () => guarded(() => fileInput.click()) }, '⬆ Імпорт .vnp');
+    const limitText = (u) => (u.count > u.max
+      ? (u.premium_expired
+        ? `Преміум завершився: у вас ${u.count} проєктів, а ліміт — ${u.max}. Проєкти збережено, але нові створювати не можна, доки їх не стане менше ${u.max} (видаліть ще ${u.count - u.max + 1}).`
+        : `У вас ${u.count} проєктів, а ліміт — ${u.max}. Нові можна створювати, коли їх стане менше ${u.max} (видаліть ще ${u.count - u.max + 1}).`)
+      : `Ліміт проєктів вичерпано: ${u.count} із ${u.max}. Видаліть непотрібний проєкт${u.premium ? '' : ` або оформіть преміум (до ${u.premium_max} проєктів)`}.`);
+    function paintUsage() {
+      if (!usage) return;
+      counter.textContent = `Проєктів: ${usage.count} / ${usage.max}${usage.premium ? ' · преміум' : ''}`;
+      counter.classList.toggle('full', !usage.can_create);
+      counter.title = usage.can_create ? `Ліміт: ${usage.max} проєктів${usage.premium ? ' (преміум)' : `; преміум дає до ${usage.premium_max}`}.` : limitText(usage);
+      newBtn.classList.toggle('is-limit', !usage.can_create); importBtn.classList.toggle('is-limit', !usage.can_create);
+      newBtn.title = importBtn.title = usage.can_create ? '' : limitText(usage);
+    }
+    const guarded = (fn) => { if (usage && !usage.can_create) { toast(limitText(usage), 'warn', 9000); return; } return fn(); };
     const page = h('div', { class: 'page' },
       h('div', { class: 'page-head' },
         h('div', {}, h('h1', {}, 'Проєкти'), h('div', { class: 'sub' }, 'Ваші нодові конвеєри. Заблоковані копії (експорт, куплені, отримані) мають окремий вигляд і не редагуються.')),
-        h('div', { class: 'row-gap' },
-          h('button', { class: 'btn ghost', onclick: () => fileInput.click() }, '⬆ Імпорт .vnp'),
-          h('button', { class: 'btn', onclick: create }, '＋ Новий проєкт'))),
+        h('div', { class: 'row-gap' }, counter, importBtn, newBtn)),
       grid, fileInput);
     root.append(page);
 
@@ -44,8 +60,9 @@ export default {
     };
 
     async function load() {
-      const { projects } = await api('/api/projects');
-      grid.replaceChildren(...projects.map(card), h('button', { class: 'project-card new-card', onclick: create }, '＋ Додати новий проєкт'));
+      const { projects, usage: u } = await api('/api/projects');
+      usage = u || null; paintUsage();                                        // старий бекенд без лімітів теж працює
+      grid.replaceChildren(...projects.map(card), h('button', { class: `project-card new-card${u && !u.can_create ? ' is-limit' : ''}`, onclick: () => guarded(create) }, '＋ Додати новий проєкт'));
     }
 
     function card(p) {
@@ -57,7 +74,12 @@ export default {
       } }, '✎ Назва');
       const del = h('button', { class: 'btn danger small', title: 'Видалити', onclick: async () => {
         const extra = locked ? ' Заблоковану копію не можна відновити — її не можна й створити заново без оплати/посилання.' : ' (збережіть .vnp, якщо потрібна копія).';
-        if (await confirmDialog('Видалити проєкт?', `«${p.name}» буде видалено без можливості відновлення${extra}`, 'Видалити', true)) {
+        // понад ліміт (напр., скінчився преміум): після видалення новий проєкт усе ще не створити, поки не стане менше ліміту — попереджаємо
+        const over = usage && usage.count > usage.max
+          ? h('p', { class: 'limit-warn' }, `Увага: у вас ${usage.count} проєктів при ліміті ${usage.max}${usage.premium_expired ? ' (преміум завершився)' : ''}. Після цього видалення залишиться ${usage.count - 1}: новий проєкт можна буде створити, лише коли їх стане менше ${usage.max} — треба видалити ще ${usage.count - usage.max}.`)
+          : null;
+        const ok = await modal({ title: 'Видалити проєкт?', text: `«${p.name}» буде видалено без можливості відновлення${extra}`, content: over, actions: [{ label: 'Скасувати', value: false }, { label: 'Видалити', value: true, cls: 'danger' }] });
+        if (ok) {
           await api(`/api/projects/${p.id}`, { method: 'DELETE' }); toast('Проєкт видалено.', 'ok'); load();
         }
       } }, '🗑');
@@ -70,7 +92,7 @@ export default {
           h('button', { class: 'btn ghost small', title: 'Завантажити проєкт у файл .vnp', onclick: () => triggerDownload(`/api/projects/${p.id}/export.vnp`) }, '⬇ .vnp'));
       } else {
         if (p.kind === 'bought') actions.push(h('button', { class: 'btn ghost small', onclick: () => triggerDownload(`/api/projects/${p.id}/export.py`) }, '⬇ .py'));
-        if ((p.kind === 'export' || p.kind === 'bought') && p.author?.id) actions.push(h('button', { class: 'btn ghost small', onclick: () => openShareModal(p) }, '🔗 Поділитися'));
+        if ((p.kind === 'export' || p.kind === 'bought') && p.author?.mine) actions.push(h('button', { class: 'btn ghost small', onclick: () => openShareModal(p) }, '🔗 Поділитися'));
       }
       actions.push(rename, del);
       return h('div', { class: `project-card ${k.cls}${locked ? ' locked' : ''}` },

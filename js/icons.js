@@ -24,6 +24,7 @@ const P = {   // внутрішність <svg>; за замовчуванням
   checkc: '<circle cx="12" cy="12" r="9"/><path d="M7.8 12.4l3 3 5.4-6"/>',
   warn: '<path d="M12 4.2l9 15.6H3z"/><path d="M12 10.2v4.2M12 17.4v.01"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.2M12 7.8v.01"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.4v5.6M12 16.4v.01"/>',
   fit: '<path d="M4.5 9V4.5H9M19.5 9V4.5H15M4.5 15v4.5H9M19.5 15v4.5H15"/>',
   target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/>',
   undo: '<path d="M9 6.5 4.5 11 9 15.5M5 11h8.2a5.8 5.8 0 0 1 0 11.6H11"/>',
@@ -68,7 +69,7 @@ const G = (name, cls = '') => ({ name, cls });
 const GLYPH = {
   '🔒': G('lock'), '🔐': G('lockkey'), '🔑': G('key'), '⚡': G('bolt'), '🗑': G('trash'), '⭐': G('star', 'ic-star'), '✕': G('x'), '✖': G('x'), '✗': G('x'),
   '🔍': G('search'), '▶': G('play', 'ic-fill'), '✎': G('pencil'), '🐍': G('code'), '✂': G('scissors'), '📊': G('chart'), '📈': G('trend'),
-  '📥': G('tray'), '⬇': G('down'), '⬆': G('up'), '⇪': G('upload'), '✔': G('check'), '✅': G('checkc'), '⚠': G('warn'), 'ℹ': G('info'), '⛶': G('fit'),
+  '📥': G('tray'), '⬇': G('down'), '⬆': G('up'), '⇪': G('upload'), '✔': G('check'), '✅': G('checkc'), '⚠': G('warn'), '❗': G('alert'), 'ℹ': G('info'), '⛶': G('fit'),
   '◎': G('target'), '↩': G('undo'), '↶': G('undo'), '↷': G('redo'), '⛔': G('ban'), '👤': G('user'), '👥': G('users'), '📁': G('folder'), '🗂': G('archive'),
   '🌙': G('moon'), '☀': G('sun'), '🛡': G('shield'), '🧩': G('nodes'), '🖼': G('image'), '🔗': G('link'), '⌫': G('backspace'), '▮': G('terminal'),
   '⚙': G('gear'), '💬': G('chat'), '⎋': G('logout'), '❓': G('help'), '✈': G('plane'), '🛠': G('wrench'), '🧾': G('receipt'), '🎟': G('ticket'), '💳': G('card'), '🚀': G('rocket'),

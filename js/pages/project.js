@@ -9,8 +9,8 @@ const KIND_BADGE = { export: '🔒 Експорт', bought: '🐍 Куплени
 
 export default {
   async mount(root, r) {
-    const pid = Number(r.param);
-    if (!pid) { go('/projects'); return; }
+    const pid = r.param;                                       // номер проєкту в адресі — хеш (10 символів)
+    if (!pid || pid.length > 40) { go('/projects'); return; }
     let project, defs;
     try {
       [project, defs] = await Promise.all([api(`/api/projects/${pid}`), state.nodeDefs ? Promise.resolve(state.nodeDefs) : api('/api/nodes')]);
@@ -31,7 +31,7 @@ export default {
     if (locked) {
       extras.push(h('span', { class: `kind-tag big kind-${project.kind}` }, KIND_BADGE[project.kind] || 'Заблоковано'));
       if (project.author) extras.push(h('span', { class: 'proj-author' }, 'Автор: ', h('b', {}, project.author.name)));
-      if ((project.kind === 'export' || project.kind === 'bought') && project.author?.id === state.user?.id) extras.push(h('button', { class: 'btn ghost small', onclick: () => openShareModal(project) }, '🔗 Поділитися'));
+      if ((project.kind === 'export' || project.kind === 'bought') && project.author?.mine) extras.push(h('button', { class: 'btn ghost small', onclick: () => openShareModal(project) }, '🔗 Поділитися'));
     } else {
       extras.push(h('button', { class: 'btn ghost small', title: 'Створити заблоковану копію цього проєкту (її можна передати за посиланням)', onclick: async () => {
         if (dirty) { clearTimeout(saveTimer); await save(); }

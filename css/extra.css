@@ -208,6 +208,7 @@ input[type=color].round::-moz-color-swatch { border: 0; border-radius: 0.62rem; 
 .search-wrap { position: relative; display: block; flex: 1 1 14rem; min-width: 0; }
 .search-wrap .ic { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 1.2em; height: 1.2em; color: var(--muted); pointer-events: none; }
 .search-wrap .input { padding-left: 2.6rem; width: 100%; }
+.ed-palette > .search-wrap, .help-side > .search-wrap, .tool-scroll > .search-wrap { flex: none; }
 
 /* ---------- головна сторінка завжди чорна (як у Parsec): шапка й меню аватара тут використовують темну палітру навіть у світлій темі ---------- */
 body[data-page="home"] #topbar, body[data-page="home"] .avatar-menu {
@@ -249,3 +250,30 @@ body[data-page="home"] #topbar, body[data-page="home"] .avatar-menu {
 .promo-foot { display: flex; align-items: center; gap: .9rem; padding-top: 1.1rem; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .modal.promo-box .actions { margin-top: .9rem; }
 @media (max-width: 34rem) { .promo-form { grid-template-columns: minmax(0, 1fr); } .promo-form .field > span { min-height: 0; } }
+
+/* ---------- довгий текст без пробілів (назви проєктів, імена, пошти, причини в історії) переноситься, а не вилазить за межі блока ---------- */
+.modal h3, .modal p, .modal label, .toast .msg, .project-name, .project-meta span, .proj-author, .page-head h1, .page-head .sub, .kind-tag,
+.list > div > span, .stat .k, .stat .v, .kv-list span, .kv-list b, .sec-row, .setting h4, .setting p, .us-head h3, .us-head small, .help-body, .share-meta,
+.pay-order small, .fine-note, .tag, .chip, .lab-cap, .term-body .ln { overflow-wrap: anywhere; }
+.list > div > span:first-child { min-width: 0; flex: 1 1 auto; }
+.list > div > .when { flex: none; max-width: 60%; white-space: normal; text-align: right; }
+.project-top > div:last-child { min-width: 0; }
+.tbl td { overflow-wrap: anywhere; max-width: 32rem; }
+.tbl td.acts, .tbl td .tag, .tbl td .mono { overflow-wrap: normal; }
+
+/* ---------- ліміт проєктів, перегляд проєкту в адмінці ---------- */
+.limit-chip { font-weight: 600; }
+.limit-chip.full { border-color: var(--warn); color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, var(--card-2)); }
+.btn.is-limit, .project-card.new-card.is-limit { opacity: .55; cursor: not-allowed; }
+.btn.is-limit:hover, .project-card.new-card.is-limit:hover { filter: none; transform: none; border-color: var(--line); }
+.modal p { white-space: pre-line; }
+.modal.viewer { width: min(110rem, 96vw); max-height: 94vh; overflow-y: auto; }
+.admin-viewer { height: 68vh; min-height: 24rem; margin-top: .75rem; border: 1px solid var(--line); border-radius: .9rem; overflow: hidden; position: relative; }
+.admin-viewer .ed { height: 100%; }
+
+.modal p.limit-warn { margin-top: 0.875rem; padding: 0.625rem 0.75rem; border-radius: 0.75rem; border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent); background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn); font-size: 0.8438rem; }
+
+/* бічні панелі й дерево: колонка сітки не розтягується під довгий текст (раніше назва ноди з 40 літер розсувала всю панель) */
+.work-scroll, .tool-scroll, .tchildren { grid-template-columns: minmax(0, 1fr); }
+.tnode, .tchildren { min-width: 0; }
+.work-tree, .work-side { overflow-wrap: anywhere; }

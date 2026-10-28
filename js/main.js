@@ -97,6 +97,7 @@ async function route() {
   }
   renderTopbar(r);
   document.body.dataset.page = r.path.slice(1) || 'home';
+  applyAppearance();                       // тема залежить від сторінки (головна — завжди темна)
   window.scrollTo(0, 0);
   try {
     const mod = await loader();

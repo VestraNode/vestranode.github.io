@@ -1,10 +1,13 @@
 // parts.js — спільні елементи форм для інструментів: зона завантаження фото, поле тексту з файлом, оплата завантаження
-import { h, $, api, toast, setUser, fmtNum, authUrl } from './core.js';
+import { h, $, api, toast, setUser, fmtNum, authUrl, state } from './core.js';
+
+/** Максимальна вага фото в МБ (з налаштувань сервера; 0 — невідомо). */
+export const photoLimitMb = () => Number(state.pub?.limits?.photo_mb) || 0;
 
 /** Зона завантаження фото: перетягування/вибір, мініатюра, ✕ (видалити), ⟲ (замінити). */
 export function photoDrop({ onFile, onClear }) {
   const input = h('input', { type: 'file', accept: 'image/*', hidden: true });
-  const empty = h('div', { class: 'drop-empty', onclick: () => input.click() }, 'Перетягніть фото сюди або ', h('u', {}, 'оберіть файл'), h('small', { style: { display: 'block' } }, 'PNG, BMP, JPG…'));
+  const empty = h('div', { class: 'drop-empty', onclick: () => input.click() }, 'Перетягніть фото сюди або ', h('u', {}, 'оберіть файл'), h('small', { style: { display: 'block' } }, `PNG, BMP, JPG…${photoLimitMb() ? ` · до ${photoLimitMb()} МБ` : ''}`));
   const thumb = h('img', { alt: '' }), name = h('b', { class: 'name' }), info = h('small', {});
   const filled = h('div', { class: 'drop-file', hidden: true }, thumb, h('div', { class: 'meta' }, name, info),
     h('button', { class: 'icon-btn', title: 'Замінити', onclick: () => input.click() }, '⟲'), h('button', { class: 'icon-btn danger', title: 'Видалити', onclick: () => onClear() }, '✕'));
@@ -25,7 +28,9 @@ export function photoDrop({ onFile, onClear }) {
 /** Завантаження фото на сервер: повертає {id,width,height,url,name,size}. */
 export async function uploadPhoto(file) {
   if (!file.type.startsWith('image/')) throw new Error(`«${file.name}» — це не зображення.`);
-  const d = await api('/api/lab/upload', { method: 'POST', body: file, headers: { 'Content-Type': 'application/octet-stream' } });
+  const limit = photoLimitMb();
+  if (limit && file.size > limit * 1048576) throw new Error(`Фото завелике: ${fmtNum(file.size / 1048576, 1)} МБ, а максимум — ${limit} МБ. Стисніть його або зменште розмір.`);
+  const d = await api('/api/lab/upload', { method: 'POST', body: file, headers: { 'Content-Type': 'application/octet-stream' }, silent: true });
   return { ...d, url: URL.createObjectURL(file), name: file.name, size: file.size };
 }
 
