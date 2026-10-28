@@ -8,7 +8,7 @@
 // Перший бекенд = основний; другий = запасний (сайт покаже, що робота буде повільнішою).
 window.VN_CONFIG = {
   backends: [
-    { name: 'Основний', url: '' },
+    { name: 'Основний (ПК)', url: 'https://desktop-4n86as9.tail1bac6.ts.net' },
   ],
   healthTimeoutMs: 4000,     // скільки чекати відповіді /api/health
   recheckSec: 30,            // як часто перевіряти бекенди
