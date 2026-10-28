@@ -177,7 +177,7 @@ export function mountWork(body, { pid, project, defs, graph, onEdit }) {
       openPayModal({ kind: 'py', projectId: pid, onPaid: () => loadPyInfo() }); return;
     }
     const ok = await confirmDialog('Придбати генерацію .py?',
-      `Самостійний скрипт на ${info.nodes} нод коштує ${info.price_uah} ₴ (100 ₴ + 10 ₴ за кожну ноду). Після оплати файл для цієї версії проєкту можна завантажувати без обмежень. Оплата — через Monobank у новій вкладці.`, `Оплатити ${info.price_uah} ₴`);
+      `Самостійний скрипт на ${info.nodes} нод коштує ${info.price_uah} ₴ (≈ ${info.stars} ⭐: 1 ⭐ до 20 нод, понад 20 — 2 ⭐, далі +1 ⭐ за кожні наступні 20). Після оплати файл для цієї версії проєкту можна завантажувати без обмежень. Оплата — через Monobank у новій вкладці.`, `Оплатити ${info.price_uah} ₴`);
     if (!ok) return;
     const pay = await api('/api/payments/create', { method: 'POST', json: { kind: 'py', project_id: pid } });
     window.open(assetUrl(pay.page_url), '_blank', 'noopener');

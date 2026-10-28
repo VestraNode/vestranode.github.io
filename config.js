@@ -17,5 +17,5 @@ window.VN_CONFIG = {
   links: { youtube_url: '', discord_url: '' },
   packs: [{ paxels: 100, price_uah: 49 }, { paxels: 200, price_uah: 89 }, { paxels: 500, price_uah: 199 }, { paxels: 1000, price_uah: 349 }],
   regen: { floor: 50, hours: 6 },
-  pricing: { py_export: { base_uah: 100, per_node_uah: 10 } },
+  pricing: { py_export: { stars_base: 1, stars_step_nodes: 20, stars_per_step: 1 } },
 };
