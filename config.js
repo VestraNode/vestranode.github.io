@@ -15,7 +15,7 @@ window.VN_CONFIG = {
   recheckSec: 30,            // як часто перевіряти бекенди
   // Дані для сторінок, що працюють без бекенда (головна, довідка). Коли бекенд доступний, з'являються його актуальні значення.
   links: { youtube_url: '', discord_url: '' },
-  packs: [{ paxels: 100, price_uah: 49 }, { paxels: 200, price_uah: 89 }, { paxels: 500, price_uah: 199 }, { paxels: 1000, price_uah: 349 }],
+  packs: [{ paxels: 100, price_uah: 1 }, { paxels: 200, price_uah: 2 }, { paxels: 500, price_uah: 3 }, { paxels: 1000, price_uah: 4 }],
   regen: { floor: 50, hours: 6 },
   pricing: { py_export: { stars_base: 1, stars_step_nodes: 20, stars_per_step: 1 } },
 };

@@ -203,7 +203,10 @@ export class Lab {
     const prevAn = this.data.analysis;
     Object.assign(this.data, patch);
     if ('analysis' in patch && patch.analysis !== prevAn) { this.analysisVer++; this.layers = null; this.chartCache = null; }
-    if ('enc' in patch || 'dec' in patch) { this.layers = null; this.pulseStart = performance.now(); }
+    if ('enc' in patch || 'dec' in patch) {
+      this.layers = null; this.pulseStart = performance.now();
+      if (patch.enc || patch.dec) this.s.view = 'used';                // після передперегляду/розкодування одразу показуємо використані чанки (якщо їх можна намалювати — перевіряє renderToolbar)
+    }
     this.render();
     if ('photo' in patch || 'enc' in patch || 'analysis' in patch) { this.refreshSteg(); if (this.data.mode === 'analysis') this.refreshSteg2(); }
     if ('mode' in patch) this.refreshSteg2();

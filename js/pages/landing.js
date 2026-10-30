@@ -122,7 +122,7 @@ export default {
     const pricing = h('section', { class: 'section', id: 'pricing' },
       h('div', { class: 'section-head' }, h('h2', {}, 'Пакселі'), h('p', {}, `Валюта сайту. Новому акаунту — 100 пакселів; якщо баланс менший за ${state.pub?.regen?.floor || 50}, він відновлюється до цього рівня кожні ${state.pub?.regen?.hours || 6} год. Пакселі списуються лише за завантаження результату.`)),
       h('div', { class: 'packs' }, packs.map((p, i) => h('div', { class: `pack${i === 2 ? ' best' : ''}` },
-        h('div', { class: 'amount' }, fmtInt(p.paxels), h('small', {}, ' пакс.')), h('div', { class: 'price' }, maint && starsOf[p.paxels] ? `${starsOf[p.paxels]} ⭐` : `${p.price_uah} ₴`),
+        h('div', { class: 'amount' }, fmtInt(p.paxels), h('small', {}, ' пакс.')), h('div', { class: 'price' }, `${p.price_uah} ₴`, starsOf[p.paxels] ? h('small', {}, ` · ${starsOf[p.paxels]} ⭐`) : null),
         h('a', { class: 'btn ghost block', href: '#/profile' }, 'Поповнити')))),
       h('p', { class: 'fine' }, 'Генерація Python-бібліотеки проєкту — окрема послуга: ',
         `${state.pub?.pricing?.py_export?.stars_base ?? 1} ⭐ до ${state.pub?.pricing?.py_export?.stars_step_nodes ?? 20} нод, понад ${state.pub?.pricing?.py_export?.stars_step_nodes ?? 20} — ${(state.pub?.pricing?.py_export?.stars_base ?? 1) + (state.pub?.pricing?.py_export?.stars_per_step ?? 1)} ⭐, далі +${state.pub?.pricing?.py_export?.stars_per_step ?? 1} ⭐ за кожні наступні ${state.pub?.pricing?.py_export?.stars_step_nodes ?? 20} нод (для преміум-акаунтів може бути безкоштовною).`));
