@@ -76,3 +76,5 @@
 
 @media (max-width: 1000px) { .tool { grid-template-columns: 1fr; } .tool-side { position: static; height: auto; } .tool-scroll { mask-image: none; -webkit-mask-image: none; } .lab-cards { grid-template-columns: 1fr; } }
 .lab-ph.tips { text-align: left; max-height: 100%; overflow: auto; align-self: stretch; } .lab-ph.tips ul { margin: 0.5rem 0 0; padding-left: 1.1rem; } .lab-ph.tips li { margin: 0.3rem 0; color: var(--text); }
+.version-hint { display: block; margin-top: 0.625rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
+.version-hint[hidden] { display: none; }

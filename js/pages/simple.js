@@ -35,7 +35,7 @@ export default {
 
     const encOnly = [], chunkOnly = [];
     let yLabel = null, optLabel = null;
-    const versionHint = h('small', { class: 'archive-note', hidden: true });
+    const versionHint = h('small', { class: 'version-hint', hidden: true });
     const co = (el) => { chunkOnly.push(el); return el; };
     const eo = (el) => { encOnly.push(el); return el; };
 
