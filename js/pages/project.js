@@ -1,5 +1,5 @@
 // project.js — сторінка проєкту: панель зверху (назва, режими, стан) + редактор нод / перегляд (для заблокованих) або робочий режим
-import { h, api, state, store, toast } from '../core.js';
+import { h, api, state, store, toast, modal } from '../core.js';
 import { go } from '../main.js';
 import { NodeEditor } from '../editor.js';
 import { mountWork } from './work.js';
@@ -38,6 +38,25 @@ export default {
         const res = await api(`/api/projects/${pid}/export`, { method: 'POST' });
         toast('Створено заблоковану копію в «Проєктах» — її можна переглядати й передавати за посиланням.', 'ok');
       } }, '⇪ Експорт'));
+    }
+    if (canTree) extras.push(h('button', { class: 'btn ghost small', title: 'Чи зможе проєкт повернути вихідні дані під час декодування', onclick: () => runDecodeCheck() }, '✔ Декодування'));
+    async function runDecodeCheck() {
+      if (dirty) { clearTimeout(saveTimer); await save(); }
+      let r;
+      try { r = await api(`/api/graph/decode-check`, { method: 'POST', json: { graph } }); } catch { return; }
+      const dyn = r.dynamic, ok = dyn.status === 'ok' && r.static.ok;
+      const head = ok ? '✔ Проєкт можна декодувати: зворотний хід відновлює вихідне значення.'
+        : dyn.status === 'skipped' ? '⚠ Автоперевірку виконати не вдалося.' : '✖ Декодування в такому вигляді не спрацює.';
+      const list = (items, cls) => items.map((i) => h('li', { class: cls }, i.message));
+      const problems = [...r.errors, ...r.static.problems];
+      const content = h('div', { class: 'dcheck' },
+        h('p', { class: ok ? 'ok' : 'bad' }, head),
+        problems.length ? h('ul', {}, list(problems, 'bad')) : null,
+        r.static.notes.length ? h('ul', {}, list(r.static.notes, 'note')) : null,
+        dyn.runs.length ? h('div', { class: 'dcheck-runs' }, h('b', {}, 'Перевірка «туди й назад»'), h('ul', {}, dyn.runs.map((x) =>
+          h('li', { class: x.ok ? 'ok' : x.skipped ? 'note' : 'bad' }, `${x.ok ? '✔' : x.skipped ? '⚠' : '✖'} ${x.variant === '—' ? 'Основний запуск' : x.variant}${x.message ? ' — ' + x.message : ''}`)))) : null,
+        h('p', { class: 'hint' }, 'Ноди без оберненої дії (хеш, модуль, мінімум, довжина…) можна використовувати лише на побічних гілках — наприклад, для ключа чи умови. На шляху між текстом і «Стего» вони ламають декодування.'));
+      await modal({ title: 'Перевірка декодування', content, actions: [{ label: 'Закрити', value: true, cls: '' }] });
     }
     root.append(h('div', { class: 'proj-bar' + (locked ? ' locked' : '') },
       h('a', { class: 'back', href: '#/projects', title: 'До проєктів' }, '←'), nameInput, ...extras, h('span', { class: 'spacer' }), status, seg), body);

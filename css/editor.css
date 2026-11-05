@@ -111,3 +111,7 @@
 .ed.ro .node-head { cursor: default; }
 .ed.ro .node-body { pointer-events: none; }
 .ed.ro .ed-hud button[title^="Відмінити"], .ed.ro .ed-hud button[title^="Повторити"] { display: none; }
+.dcheck { display: grid; gap: 0.6rem; max-height: 60vh; overflow-y: auto; font-size: 0.9rem; }
+.dcheck p { margin: 0; } .dcheck p.ok { color: var(--ok); font-weight: 600; } .dcheck p.bad { color: var(--danger); font-weight: 600; }
+.dcheck ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.35rem; } .dcheck li.bad { color: var(--danger); } .dcheck li.ok { color: var(--ok); } .dcheck li.note { color: var(--warn, #ffd166); }
+.dcheck-runs ul { margin-top: 0.35rem; list-style: none; padding-left: 0; }
