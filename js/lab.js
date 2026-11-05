@@ -146,8 +146,8 @@ export class Lab {
     this.blink = h('input', { type: 'color', class: 'round', value: this.s.blink, title: 'Колір мигання', oninput: (e) => { this.s.blink = e.target.value; this.persist(); this.layers = null; this.paintGrid(); } });
     this.termBtn = h('button', { class: 'btn ghost small', onclick: () => this.term?.toggle() }, '▮ Термінал');
     const tf = (label, el) => h('div', { class: 'tb-field' }, h('small', {}, label), el);
-    this.toolbar = h('div', { class: 'lab-toolbar' }, tf('Градієнт', this.gradSel), tf('Нормалізація кольору', this.normSel), tf('Перегляд сітки', this.viewSeg),
-      this.tf1 = tf('Стегоаналіз (фото 3 і 4)', this.stegSel), this.tf2 = tf('Другий вигляд (фото 4)', this.stegSel2), tf('Колір мигання', this.blink), tf(' ', this.termBtn));
+    this.toolbar = h('div', { class: 'lab-toolbar' }, tf('Градієнт', this.gradSel), tf('Нормалізація кольору', this.normSel), this.tfView = tf('Перегляд сітки', this.viewSeg),
+      this.tf1 = tf('Стегоаналіз (фото 3 і 4)', this.stegSel), this.tf2 = tf('Другий вигляд (фото 4)', this.stegSel2), this.tfBlink = tf('Колір мигання', this.blink), tf(' ', this.termBtn));
 
     this.statsBox = h('div', { class: 'lab-stats' });
     this.chartWrap = h('div', { class: 'lab-chart-wrap' }, this.cv = h('canvas'), this.tip = h('div', { class: 'lab-tip', hidden: true }));
@@ -245,6 +245,7 @@ export class Lab {
     const usedOk = !!this.usedCells();
     if (!usedOk && this.s.view === 'used') this.s.view = 'noise';
     this.tf2.hidden = this.data.mode !== 'analysis';
+    this.tfView.hidden = this.tfBlink.hidden = this.data.mode === 'analysis';      // у «Стегоаналізі» використаних чанків немає — ці два налаштування зайві
     this.tf1.querySelector('small').textContent = this.data.mode === 'analysis' ? 'Стегоаналіз (фото 3)' : 'Стегоаналіз (фото 3 і 4)';
     this.viewSeg.replaceChildren(...[['noise', 'Шумність'], ['used', 'Використані чанки']].map(([id, label]) =>
       h('button', { class: this.s.view === id ? 'on' : '', disabled: id === 'used' && !usedOk, onclick: () => { this.s.view = id; this.pulseStart = performance.now(); this.render(); } }, label)));

@@ -87,7 +87,7 @@ export default {
 
     const authed = !!state.user;
     const hero = h('section', { class: 'hero' },
-      h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-grain' }),
+      h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-glow c' }), h('div', { class: 'hero-grain' }),
       h('div', { class: 'hero-inner' },
         h('h1', {}, 'Створюй свої', h('br'), word, h('br'), 'з нодів'),
         h('p', { class: 'lead' }, 'VestraNode — редактор, у якому ви збираєте власні шифрувальники й стего-конвеєри з нодів, а потім ховаєте дані у фото й експортуєте все це в Python. Без коду, з перевіркою типів і стегоаналізом.'),
