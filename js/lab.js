@@ -252,7 +252,11 @@ export class Lab {
   }
 
   frame(f, key, build) { if (f.dataset.key === key) return; f.dataset.key = key; f.replaceChildren(build()); }
-  ph(text, err) { return h('div', { class: `lab-ph${err ? ' err' : ''}` }, text); }
+  ph(text, err) {
+    const [main, tips] = String(text).split(' Рекомендації: ');
+    if (!err || !tips) return h('div', { class: `lab-ph${err ? ' err' : ''}` }, text);
+    return h('div', { class: 'lab-ph err tips' }, h('b', {}, main), h('ul', {}, tips.split(/\s(?=\d+\)\s)/).map((t) => h('li', {}, t.replace(/^\d+\)\s*/, '')))));
+  }
   img(src) { return h('img', { src, alt: '' }); }
 
   renderCards() {
@@ -395,11 +399,21 @@ export class Lab {
       cap.push(['Дані до архівації', fmtBytes(st.original_bytes)],
         ['Після архівації', fmtBytes(st.stored_bytes), packed ? `${st.compression}: ${fmtNum((st.stored_bytes / Math.max(1, st.original_bytes)) * 100, 1)} % від початкового` : 'без стиснення'],
         ['Використано всього', fmtBytes(st.used_bytes), 'дані + заголовок + маркери'], ['Обсяг прихованої інформації', fmtBytes(st.payload_bytes), capacity ? fmtPct(st.payload_bytes, capacity) + ' місткості' : ''],
-        ['Службові: заголовок', fmtBytes(st.header_bytes)], ['Службові: маркери чанків', fmtBytes(st.marker_bytes), `${fmtInt(st.chunks_used)} чанків: №1 — ${st.marker_pixels_first || 2} піксел., решта — ${st.marker_pixels}`],
+        ['Службові: заголовок', fmtBytes(st.header_bytes)]);
+      if (st.telegram) cap.push(['Службові: корекція помилок', `${st.telegram.ecc_parity} байт`, 'Рід—Соломон на кожні 255 байт'], ['Блоків 8×8 задіяно', fmtInt(st.telegram.blocks_used), fmtPct(st.telegram.blocks_used, st.telegram.blocks_total)]);
+      else cap.push(['Службові: маркери чанків', fmtBytes(st.marker_bytes), `${fmtInt(st.chunks_used)} чанків: №1 — ${st.marker_pixels_first || 2} піксел., решта — ${st.marker_pixels}`],
         ['Піксели маркера (M)', String(st.marker_pixels), st.version === 'ChunkyV1.1' ? `${st.marker_bpc} біт на канал; план M=${st.marker_pixels_safe}` : 'підібрано під кількість чанків']);
       if (st.lsb_changes != null) cap.push(['LSB matching (±1 за шумом)', fmtInt(st.lsb_changes), 'значень каналів змінено у бік меншого шуму'], ['Циклів перевірки', String(st.cycles), `усунено збігів: ${fmtInt(st.marker_fixes)}`]);
     }
     if (cap.length) groups.push(['Місткість і використання', cap]);
+    if (st && enc && st.telegram) {
+      const T = st.telegram;
+      groups.push(['Стійкість до Telegram', [
+        ...(st.prepared ? [['Оптимізація фото', `${st.prepared[0]}×${st.prepared[1]} → ${st.prepared[2]}×${st.prepared[3]}`, 'Telegram не зменшує фото до 1280 px, тому зменшено заздалегідь']] : []),
+        ...T.checks.map((c) => [c.label, c.ok ? '✔ читається' : '✖ не читається', c.ok ? `запас: виправлено ${c.worst} із ${c.t} байтів на кодове слово` : (c.required ? 'обов’язкова перевірка' : 'додаткова, не обов’язкова')]),
+        ['Міцність запису', fmtNum(T.strength, 1), `${T.bits_per_block} біт на блок 8×8`], ['Файл результату', `JPEG q${T.file_quality}`, fmtBytes(T.file_bytes)],
+        ...(T.warnings || []).filter((w) => !w.startsWith('Перевірка')).map((w) => ['Увага', '', w])]]);
+    }
     return groups;
   }
   renderStats() {

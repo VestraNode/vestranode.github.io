@@ -3,7 +3,7 @@ import { h, $, api, state, store, select, toast, setUser, fmtInt, fmtNum, deboun
 import { Lab, Terminal } from '../lab.js';
 import { photoDrop, uploadPhoto, dropServer, chargeAndDownload, triggerDownload, stepLabel } from '../parts.js';
 
-const VERSIONS = [['chunky11', 'ChunkyV1.1'], ['schunky', 'SChunky'], ['basic1', 'BasicV1'], ['basic2', 'BasicV2'], ['basic3', 'BasicV3'], ['basic4', 'BasicV4']];
+const VERSIONS = [['chunky11', 'ChunkyV1.1'], ['chunky2', 'ChunkyV2QIM'], ['schunky', 'SChunky'], ['basic1', 'BasicV1'], ['basic2', 'BasicV2'], ['basic3', 'BasicV3'], ['basic4', 'BasicV4']];
 const isBasic = (v) => v.startsWith('basic');
 const NEEDS_KEY = { basic2: true, basic4: true };
 
@@ -34,6 +34,8 @@ export default {
     const priceLine = h('div', { class: 'price-line' });
 
     const encOnly = [], chunkOnly = [];
+    let yLabel = null, optLabel = null;
+    const versionHint = h('small', { class: 'archive-note', hidden: true });
     const co = (el) => { chunkOnly.push(el); return el; };
     const eo = (el) => { encOnly.push(el); return el; };
 
@@ -41,15 +43,15 @@ export default {
       h('div', { class: 'tool-scroll' },
         h('div', { class: 'tool-title' }, '🔐 Стего'),
         state.pub?.archive_days ? h('small', { class: 'archive-note' }, `Для безпеки сервісу результати кодування й декодування зберігаються ${state.pub.archive_days} днів.`) : null,
-        h('div', {}, stepLabel(1, 'Версія кодера'), versionSel),
+        h('div', {}, stepLabel(1, 'Версія кодера'), versionSel, versionHint),
         h('div', {}, stepLabel(2, 'Режим'), modeSeg),
         h('div', {}, stepLabel(3, 'Фото'), photo.el),
         eo(h('div', {}, stepLabel(4, 'Текст'), text, h('div', { class: 'row-gap', style: { marginTop: '8px' } }, h('button', { class: 'btn ghost small', onclick: () => textFile.click() }, 'Завантажити .txt'), textFile, chip), textInfo)),
         h('div', {}, stepLabel(0, 'Параметри'), h('div', { class: 'params3' },
-          h('label', {}, 'x (чанк, px)', px), eo(co(h('label', {}, 'y (пікс./чанк)', py))), h('label', {}, 'поріг аналізу', pt)),
+          h('label', {}, 'x (чанк, px)', px), eo(co(yLabel = h('label', {}, 'y (пікс./чанк)', py))), h('label', {}, 'поріг аналізу', pt)),
           eo(co(h('div', { class: 'checks' },
             h('label', { class: 'check' }, compress, h('span', {}, 'Архівувати перед кодуванням', h('small', {}, 'zlib / bz2 / lzma'))),
-            h('label', { class: 'check' }, optimize, h('span', {}, 'Максимальна оптимізація маркера', h('small', {}, 'мінімальний маркер, що проходить перевірку'))))))),
+            optLabel = h('label', { class: 'check' }, optimize, h('span', {}, 'Максимальна оптимізація маркера', h('small', {}, 'мінімальний маркер, що проходить перевірку'))))))),
         h('div', {}, stepLabel(5, 'Ключ'), key)),
       h('div', { class: 'tool-buttons' }, priceLine, btnPreview, eo(btnCheck), btnDownload, verifyBox));
 
@@ -65,6 +67,11 @@ export default {
       modeSeg.replaceChildren(...[['encode', 'Кодувати'], ['decode', 'Декодувати']].map(([id, l]) => h('button', { class: S.mode === id ? 'on' : '', onclick: () => setMode(id) }, l)));
       encOnly.forEach((el) => { el.hidden = S.mode === 'decode'; });
       chunkOnly.forEach((el) => { el.hidden = el.hidden || isBasic(versionSel.value); });
+      const qim = versionSel.value === 'chunky2';
+      if (yLabel) yLabel.hidden = yLabel.hidden || qim;
+      if (optLabel) optLabel.hidden = qim;
+      versionHint.hidden = !qim;
+      versionHint.textContent = qim ? 'Стійка до Telegram: дані в коефіцієнтах JPEG. Фото більше 1280 px буде зменшено, результат — JPEG (його й надсилайте як фото).' : '';
       key.placeholder = NEEDS_KEY[versionSel.value] ? 'обов’язковий (число або текст)' : versionSel.value === 'basic1' || versionSel.value === 'basic3' ? 'не потрібен для цієї версії' : 'порожньо — без ключа';
       const has = S.photo?.id, enc = S.mode === 'encode';
       btnPreview.textContent = enc ? 'Передперегляд' : 'Розкодувати';
@@ -130,6 +137,7 @@ export default {
         const d = await api('/api/lab/encode', { method: 'POST', json: { id: S.photo.id, text: S.text, ...p }, silent: true });
         term.ingest(d.logs); if (S.enc) dropServer(S.enc.enc_id);
         S.enc = d; S.dirty = false; S.verify = null;
+        if (d.prepared && d.source_id !== S.photo.id) { S.photo = { ...S.photo, id: d.source_id, width: d.prepared.width, height: d.prepared.height }; photo.set(S.photo); lab.set({ photo: S.photo }); }   // ChunkyV2QIM зменшила фото під Telegram
         lab.set({ enc: d, encError: null, stale: false, analysis: { ...(lab.data.analysis || {}), chunk_size: d.chunk_size, rows: d.rows, cols: d.cols, max_possible: d.max_possible, grid: d.grid, histogram: d.histogram, width: d.stats.width, height: d.stats.height, noise_channels: lab.data.analysis?.noise_channels, pollution_index: lab.data.analysis?.pollution_index, capacity_bytes: d.stats.capacity_bytes } });
       } catch (e) { S.enc = null; lab.set({ enc: null, encError: e.message, stale: false }); toast(e.message, 'error'); term.add('error', e.message, 'encode'); }
       finally { busy(-1); }
@@ -161,7 +169,7 @@ export default {
       if (S.mode === 'encode') {
         if (!S.enc || S.dirty) await runEncode();
         if (!S.enc) return;
-        try { await chargeAndDownload(S.enc.enc_id, `${base}_stego.png`); } catch (e) { term.add('error', e.message, 'pay'); }
+        try { await chargeAndDownload(S.enc.enc_id, `${base}_stego.${S.enc.stats?.telegram ? 'jpg' : 'png'}`); } catch (e) { term.add('error', e.message, 'pay'); }
       } else {
         if (!S.dec || S.dirty) await runDecode();
         if (S.dec) triggerDownload(`/api/lab/text/${S.dec.text_id}`);

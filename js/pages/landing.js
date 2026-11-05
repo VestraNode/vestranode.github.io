@@ -51,7 +51,7 @@ const EXAMPLES = [
 const FEATURES = [
   ['🧩', 'Візуальні ноди', 'Імпорт, конвертації, шифрувальники, арифметика, логіка — сполучайте порти кольорових типів.'],
   ['🔐', '18+ шифрувальників', 'Base64/32/85, Цезар, Віженер, XOR, Атбаш, ROT, Морзе, потоковий SHA-256 та інші.'],
-  ['🖼', 'Шість версій стего', 'SChunky та ChunkyV1.1 (чанки, підлаштування під шум) і прості BasicV1–V4 — докладно в довідці.'],
+  ['🖼', 'Сім версій стего', 'SChunky та ChunkyV1.1 (чанки, підлаштування під шум), ChunkyV2QIM (переживає Telegram) і прості BasicV1–V4 — докладно в довідці.'],
   ['↩', 'Декодування саме', 'Проєкт інвертує свій ланцюг нод: від фото до початкового тексту, без окремих налаштувань.'],
   ['🐍', 'Експорт у Python', 'Самодостатній .py: бібліотека й командний рядок з усім вбудованим.'],
   ['📊', 'Стегоаналіз', 'Шум, LSB-площини, χ²-атака, різниця до/після та повна статистика з графіком.'],
@@ -87,7 +87,7 @@ export default {
 
     const authed = !!state.user;
     const hero = h('section', { class: 'hero' },
-      h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-glow c' }), h('div', { class: 'hero-grain' }),
+      h('div', { class: 'hero-grain' }),
       h('div', { class: 'hero-inner' },
         h('h1', {}, 'Створюй свої', h('br'), word, h('br'), 'з нодів'),
         h('p', { class: 'lead' }, 'VestraNode — редактор, у якому ви збираєте власні шифрувальники й стего-конвеєри з нодів, а потім ховаєте дані у фото й експортуєте все це в Python. Без коду, з перевіркою типів і стегоаналізом.'),
@@ -98,7 +98,7 @@ export default {
           h('a', { class: 'btn pill outline', href: '#/analysis' }, 'Стегоаналіз')),
         !authed && h('div', { class: 'hint' }, 'Новий акаунт отримує ', h('b', {}, '100 пакселів'), ' — вистачить на кілька зображень.'),
       ),
-      h('div', { class: 'mock-wrap' }, h('div', { class: 'mock' },
+      h('div', { class: 'mock-wrap' }, h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-glow c' }), h('div', { class: 'mock' },
         h('div', { class: 'mock-bar' }, h('i'), h('i'), h('i'), h('span', {}, 'secret-message.vn  ·  режим редагування')),
         h('div', { class: 'mock-body' }, h('div', { class: 'mock-editor' }, editorMock()), h('div', { class: 'mock-split' }), photoPair()),
         h('div', { class: 'mock-tag' }, 'OTHERS')),

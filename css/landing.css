@@ -7,16 +7,17 @@ body[data-page="home"] #topbar { color: #fff; }
 .try:hover { background: #fff !important; color: #000 !important; filter: none !important; }
 
 .hero { position: relative; overflow: hidden; background: #000; color: #fff; padding: 9.375rem 1.5rem 0; text-align: center; isolation: isolate; }
-.hero-glow { position: absolute; z-index: -2; border-radius: 50%; filter: blur(4.5rem); will-change: transform; }
-/* як у Parsec: чорний верх, знизу широкий дифузний перелив — бордово-фіолетовий зліва, бірюзово-синій справа */
-.hero-glow.a { width: 80vw; height: 38vw; left: -26vw; top: 30vw; background: radial-gradient(closest-side, rgba(176, 62, 104, .85) 0%, rgba(110, 38, 92, .55) 45%, rgba(0, 0, 0, 0) 100%); opacity: .8; animation: drift-a 16s ease-in-out infinite alternate; }
-.hero-glow.b { width: 92vw; height: 62vw; right: -34vw; top: 8vw; background: radial-gradient(closest-side, rgba(36, 176, 196, .9) 0%, rgba(20, 108, 160, .6) 45%, rgba(0, 0, 0, 0) 100%); opacity: .85; animation: drift-b 18s ease-in-out infinite alternate; }
-.hero-glow.c { width: 70vw; height: 30vw; left: 12vw; top: 40vw; background: radial-gradient(closest-side, rgba(60, 74, 150, .55) 0%, rgba(0, 0, 0, 0) 100%); opacity: .7; }
+.hero-glow { position: absolute; z-index: -2; border-radius: 50%; filter: blur(6rem); will-change: transform; pointer-events: none; }
+/* розсіяний перелив «з-за прикладу» (як у Parsec): центри біля верхнього краю вікна-прикладу, ліва частина бордово-фіолетова, права бірюзово-синя на тому ж рівні */
+.hero-glow.a { width: 62vw; height: 40vw; left: -20vw; top: -14vw; background: radial-gradient(closest-side, rgba(190, 66, 112, .95) 0%, rgba(128, 42, 108, .6) 48%, rgba(0, 0, 0, 0) 100%); opacity: 1; animation: drift-a 18s ease-in-out infinite alternate; }
+.hero-glow.b { width: 74vw; height: 44vw; right: -26vw; top: -14vw; background: radial-gradient(closest-side, rgba(40, 190, 212, .95) 0%, rgba(22, 116, 170, .6) 48%, rgba(0, 0, 0, 0) 100%); opacity: 1; animation: drift-b 20s ease-in-out infinite alternate; }
+.hero-glow.c { width: 56vw; height: 30vw; left: 22vw; top: -6vw; background: radial-gradient(closest-side, rgba(76, 86, 180, .55) 0%, rgba(0, 0, 0, 0) 100%); opacity: .8; }
 /* зерно: добре помітне саме на кольорі, на чорному не видно */
 .hero-grain { position: absolute; inset: 0; z-index: -1; opacity: .55; mix-blend-mode: overlay; pointer-events: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='2.4' intercept='-.7'/><feFuncG type='linear' slope='2.4' intercept='-.7'/><feFuncB type='linear' slope='2.4' intercept='-.7'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
-@keyframes drift-a { to { transform: translate(8vw, -4vw) scale(1.12); } }
-@keyframes drift-b { to { transform: translate(-7vw, -3vw) scale(1.08); } }
+@media (max-width: 700px) { .hero-glow { filter: blur(4rem); } .hero-glow.a { width: 120vw; height: 80vw; left: -45vw; top: -34vw; } .hero-glow.b { width: 130vw; height: 84vw; right: -50vw; top: -34vw; } .hero-glow.c { display: none; } }
+@keyframes drift-a { to { transform: translate(5vw, -2vw) scale(1.1); } }
+@keyframes drift-b { to { transform: translate(-5vw, -2vw) scale(1.07); } }
 
 .hero-inner { max-width: 61.25rem; margin: 0 auto; }
 .eyebrow { display: inline-block; padding: 0.375rem 1rem; border: 1px solid rgba(255, 255, 255, .22); border-radius: 62.4375rem; color: rgba(255, 255, 255, .8); font-size: 0.8125rem; letter-spacing: 0.025rem; background: rgba(255, 255, 255, .05); margin-bottom: 1.625rem; }
@@ -33,7 +34,8 @@ body[data-page="home"] #topbar { color: #fff; }
 .hint { margin-top: 1.375rem; color: rgba(255, 255, 255, .6); font-size: 0.875rem; }
 .hint b { color: #ffd166; }
 
-.mock-wrap { max-width: min(var(--land), 100%); margin: 4.375rem auto 0; padding: 0 0 0; }
+.mock-wrap { position: relative; max-width: min(var(--land), 100%); margin: 4.375rem auto 0; padding: 0 0 0; }
+.mock-wrap > .mock { position: relative; z-index: 0; }
 .mock { background: rgba(14, 15, 19, .88); border: 1px solid rgba(255, 255, 255, .1); border-bottom: 0; border-radius: 1.625rem 1.625rem 0 0; backdrop-filter: blur(0.625rem); box-shadow: 0 -1.25rem 5rem rgba(110, 90, 255, .18); overflow: hidden; text-align: left; }
 .mock-bar { display: flex; align-items: center; gap: 0.4375rem; padding: 0.875rem 1.125rem; border-bottom: 1px solid rgba(255, 255, 255, .08); color: rgba(255, 255, 255, .55); font-size: 0.7812rem; }
 .mock-bar i { width: 0.6875rem; height: 0.6875rem; border-radius: 50%; background: #ff5f57; } .mock-bar i:nth-child(2) { background: #febc2e; } .mock-bar i:nth-child(3) { background: #28c840; margin-right: 0.5rem; }

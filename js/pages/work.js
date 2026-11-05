@@ -135,6 +135,7 @@ export function mountWork(body, { pid, project, defs, graph, onEdit }) {
       if (enc) {
         if (S.enc) dropServer(S.enc.enc_id);
         S.enc = d; S.dirty = false;
+        if (d.source_id && mainPhoto() && d.source_id !== mainPhoto().id) { S.photos[mainImageNode] = { ...mainPhoto(), id: d.source_id, width: d.stats.width, height: d.stats.height }; lab.set({ photo: S.photos[mainImageNode] }); }   // ChunkyV2QIM зменшила фото під Telegram
         lab.set({ enc: d, encError: null, hasText: true, stale: false, analysis: { ...(lab.data.analysis || {}), chunk_size: d.chunk_size, rows: d.rows, cols: d.cols, max_possible: d.max_possible, grid: d.grid, histogram: d.histogram, width: d.stats.width, height: d.stats.height, noise_channels: lab.data.analysis?.noise_channels, pollution_index: lab.data.analysis?.pollution_index, capacity_bytes: d.stats.capacity_bytes } });
       } else {
         S.dec = d; S.dirty = false;
@@ -155,7 +156,7 @@ export function mountWork(body, { pid, project, defs, graph, onEdit }) {
     if (S.mode === 'encode') {
       if (!S.enc || S.dirty) await run();
       if (!S.enc) return;
-      try { await chargeAndDownload(S.enc.enc_id, `${base}_stego.png`); S.enc.charged = true; } catch (e) { term.add('error', e.message, 'pay'); }
+      try { await chargeAndDownload(S.enc.enc_id, `${base}_stego.${S.enc.stats?.telegram ? 'jpg' : 'png'}`); S.enc.charged = true; } catch (e) { term.add('error', e.message, 'pay'); }
     } else {
       if (!S.dec || S.dirty) await run();
       if (S.dec) triggerDownload(`/api/lab/text/${S.dec.text_id}`);
