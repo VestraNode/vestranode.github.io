@@ -179,7 +179,7 @@ export default {
 
     // ------------------------------------------------------------- промокоди
     function promoForm(p) {
-      const edit = !!p, v = p || { type: 'paxels', paxels: 100, max_uses: 1, expires_at: '', free_py: false, premium_text: '', note: '', disabled: false };
+      const edit = !!p, v = p || { type: 'paxels', paxels: 100, max_people: 1, per_user: 1, expires_at: '', free_py: false, premium_text: '', note: '', disabled: false };
       const code = h('input', { class: 'input', placeholder: 'наприклад SUMMER-100', value: v.code || '', disabled: edit, autocomplete: 'off' });
       const type = h('select', { class: 'input' }, new Option('Пакселі', 'paxels'), new Option('Преміум', 'premium')); type.value = v.type;
       const paxels = h('input', { class: 'input num', type: 'number', min: 1, value: v.paxels ?? 100 });
@@ -187,21 +187,23 @@ export default {
       const freePy = h('input', { type: 'checkbox', checked: !!v.free_py });
       const untilLabel = h('span', {});
       const until = h('input', { class: 'input', type: 'date', value: (v.expires_at || '').slice(0, 10) });
-      const max = h('input', { class: 'input num', type: 'number', min: 1, placeholder: 'без обмеження', value: v.max_uses ?? '' });
+      const max = h('input', { class: 'input num', type: 'number', min: 1, placeholder: 'усі', value: v.max_people ?? '' });
+      const perUser = h('input', { class: 'input num', type: 'number', min: 1, max: 1000, value: v.per_user ?? 1 });
+      const perUserField = h('label', { class: 'field' }, h('span', {}, 'Скільки разів може використати одна людина'), perUser);
       const note = h('input', { class: 'input', placeholder: 'Нотатка (бачите лише ви)', value: v.note || '' });
       const off = h('input', { type: 'checkbox', checked: !!v.disabled });
       const rowPax = h('label', { class: 'field' }, h('span', {}, 'Скільки пакселів дає'), paxels);
       const rowPrem = h('label', { class: 'field' }, h('span', {}, 'Текст після «ПРЕМІУМ»'), text);
       const rowFree = h('label', { class: 'check span2' }, freePy, h('span', {}, 'Безкоштовна генерація .py'));
       const sync = () => {
-        rowPax.hidden = type.value !== 'paxels'; rowPrem.hidden = rowFree.hidden = type.value !== 'premium';
+        rowPax.hidden = perUserField.hidden = type.value !== 'paxels'; rowPrem.hidden = rowFree.hidden = type.value !== 'premium';
         untilLabel.textContent = type.value === 'premium' ? 'Преміум діє до (обов’язково)' : 'Можна активувати до (порожньо — без терміну)';
       };
       type.onchange = sync; sync();
       let box;
       const save = async () => {
         const json = { code: code.value.trim(), type: type.value, paxels: type.value === 'paxels' ? +paxels.value : null, premium_text: text.value, free_py: freePy.checked,
-          expires_at: until.value, max_uses: max.value === '' ? null : +max.value, note: note.value, disabled: off.checked };
+          expires_at: until.value, max_people: max.value === '' ? null : +max.value, per_user: type.value === 'paxels' ? (+perUser.value || 1) : 1, note: note.value, disabled: off.checked };
         await api(edit ? '/api/admin/promos/' + encodeURIComponent(v.code) : '/api/admin/promos', { method: edit ? 'PATCH' : 'POST', json });
         toast(edit ? 'Промокод збережено.' : 'Промокод створено.', 'ok'); box._close(null); show('promos');
       };
@@ -209,7 +211,7 @@ export default {
         h('label', { class: 'field span2' }, h('span', {}, 'Код'), code),
         h('label', { class: 'field' }, h('span', {}, 'Тип'), type), rowPax, rowPrem, rowFree,
         h('label', { class: 'field' }, untilLabel, until),
-        h('label', { class: 'field' }, h('span', {}, 'Скільки разів можна активувати всього'), max),
+        perUserField, h('label', { class: 'field' }, h('span', {}, 'Скільки людей можуть використати (порожньо — усі)'), max),
         h('label', { class: 'field span2' }, h('span', {}, 'Нотатка'), note),
         h('label', { class: 'check span2' }, off, h('span', {}, 'Вимкнено (код не працює, але не видаляється)')),
         h('div', { class: 'promo-foot span2' }, h('button', { class: 'btn', onclick: save }, edit ? 'Зберегти' : 'Створити'),
@@ -220,7 +222,7 @@ export default {
 
     async function promoUses(p) {
       const d = await api(`/api/admin/promos/${encodeURIComponent(p.code)}/uses`);
-      modal({ title: `Хто використав ${p.code}`, content: table(['Користувач', 'Коли'], d.items.map((u) => h('tr', {}, h('td', {}, u.email ? `${u.name} · ${u.email}` : `#${u.user_id}`), h('td', {}, fmtDate(u.used_at)))), 'Ще ніхто не використовував.'),
+      modal({ title: `Хто використав ${p.code}`, content: table(['Користувач', 'Разів', 'Останнє'], d.items.map((u) => h('tr', {}, h('td', {}, u.email ? `${u.name} · ${u.email}` : `#${u.user_id}`), h('td', {}, `${u.n || 1}×`), h('td', {}, fmtDate(u.used_at)))), 'Ще ніхто не використовував.'),
         actions: [{ label: 'Закрити', value: null }] });
     }
 
@@ -233,7 +235,7 @@ export default {
         table(['Код', 'Нагорода', 'Діє до', 'Використано', 'Стан', 'Нотатка', ''], d.items.map((p) => {
           const [label, cls] = PROMO_STATE[p.state] || [p.state, 'dim'];
           return h('tr', {}, h('td', {}, h('b', {}, p.code)), h('td', {}, reward(p)), h('td', {}, p.expires_at ? fmtDate(p.expires_at) : '—'),
-            h('td', {}, p.max_uses == null ? `${p.used} / ∞` : `${p.used} / ${p.max_uses}`), h('td', {}, h('span', { class: `tag ${cls}` }, label)), h('td', { class: 'ellip' }, p.note || ''),
+            h('td', {}, `${p.people} ${p.max_people == null ? '' : '/ ' + p.max_people + ' '}осіб`, h('small', { class: 'blk' }, `${p.used} актив.${p.type === 'paxels' ? ` · до ${p.per_user}× на людину` : ''}`)), h('td', {}, h('span', { class: `tag ${cls}` }, label)), h('td', { class: 'ellip' }, p.note || ''),
             h('td', { class: 'acts' }, h('button', { class: 'btn ghost small', onclick: () => promoForm(p) }, '✎ Змінити'), h('button', { class: 'btn ghost small', onclick: () => promoUses(p) }, 'Хто використав'),
               h('button', { class: 'btn danger small', onclick: async () => { if (await confirmDialog('Видалити промокод?', `${p.code} буде видалено разом з історією його використань.`, 'Видалити', true)) { await api('/api/admin/promos/' + encodeURIComponent(p.code), { method: 'DELETE' }); toast('Видалено.', 'ok'); show('promos'); } } }, '🗑')));
         }), 'Промокодів ще немає.'));
