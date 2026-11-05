@@ -98,7 +98,7 @@ export default {
           h('a', { class: 'btn pill outline', href: '#/analysis' }, 'Стегоаналіз')),
         !authed && h('div', { class: 'hint' }, 'Новий акаунт отримує ', h('b', {}, '100 пакселів'), ' — вистачить на кілька зображень.'),
       ),
-      h('div', { class: 'mock-wrap' }, h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-glow c' }), h('div', { class: 'mock' },
+      h('div', { class: 'mock-wrap' }, h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-glow c' }), h('div', { class: 'hero-glow d' }), h('div', { class: 'mock' },
         h('div', { class: 'mock-bar' }, h('i'), h('i'), h('i'), h('span', {}, 'secret-message.vn  ·  режим редагування')),
         h('div', { class: 'mock-body' }, h('div', { class: 'mock-editor' }, editorMock()), h('div', { class: 'mock-split' }), photoPair()),
         h('div', { class: 'mock-tag' }, 'OTHERS')),
