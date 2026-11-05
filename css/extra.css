@@ -211,7 +211,7 @@ input[type=color].round::-moz-color-swatch { border: 0; border-radius: 0.62rem; 
 .ed-palette > .search-wrap, .help-side > .search-wrap, .tool-scroll > .search-wrap { flex: none; }
 
 /* ---------- головна сторінка завжди чорна (як у Parsec): шапка й меню аватара тут використовують темну палітру навіть у світлій темі ---------- */
-body[data-page="home"] #topbar, body[data-page="home"] .avatar-menu {
+body[data-page="home"] #topbar, body[data-page="home"] .avatar-menu, body[data-page="home"] .burger-menu {
   --bg: #0b0c10; --bg-2: #12141a; --card: #171a21; --card-2: #1e222b; --line: #2b303c; --text: #eef0f4; --muted: #9aa3b2; --faint: #6c7586;
   --accent-ink: var(--accent); --danger: #ff6b6b; --ok: #5fd68a; --warn: #ffd166; color-scheme: dark; color: var(--text);
 }
@@ -277,3 +277,13 @@ body[data-page="home"] #topbar, body[data-page="home"] .avatar-menu {
 .work-scroll, .tool-scroll, .tchildren { grid-template-columns: minmax(0, 1fr); }
 .tnode, .tchildren { min-width: 0; }
 .work-tree, .work-side { overflow-wrap: anywhere; }
+
+/* ---------- вузькі екрани: бургер-меню замість навігації, без напису поруч із логотипом ---------- */
+.burger-btn { display: none; place-items: center; width: 3.2rem; height: 3.2rem; padding: 0; border: 1px solid var(--line); border-radius: 0.85rem; background: var(--card); color: var(--text); cursor: pointer; }
+.burger-btn:hover, .burger-btn[aria-expanded="true"] { border-color: var(--accent); }
+body[data-page="home"] .burger-btn { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .22); color: #fff; }
+.burger-menu { position: fixed; right: 0.875rem; top: calc(var(--header-h) - 0.5rem); width: min(19rem, calc(100vw - 1.75rem)); max-height: calc(100vh - var(--header-h) - 1rem); overflow-y: auto; z-index: 120; }
+body[data-page="home"] .burger-menu { background: var(--card); }
+@media (max-width: 860px) { .burger-btn { display: grid; } .burger-menu { right: 0.875rem; } }
+@media (max-width: 600px) { .logo-text { display: none; } #topbar { gap: 0.5rem; } .top-right { gap: 0.5rem; margin-left: auto; } .top-right .btn { padding: 0.55rem 0.9rem; } }
+@media (min-width: 861px) { .burger-menu { display: none; } }

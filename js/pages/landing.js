@@ -1,5 +1,5 @@
 // landing.js — головна сторінка (стиль Parsec): hero, макет редактора, приклади, пакселі, підвал
-import { h, state, fmtInt } from '../core.js';
+import { h, state, fmtInt, noCursor } from '../core.js';
 import { miniGraphSVG, PNG_SKY } from '../graphart.js';
 
 const T = (n, t) => ({ name: n, type: t });
@@ -85,7 +85,7 @@ export default {
       setTimeout(() => { wi = (wi + 1) % words.length; word.textContent = words[wi]; word.classList.remove('out'); }, 320);
     }, 2800);
 
-    const authed = !!state.user;
+    const authed = !!state.user, phone = noCursor();      // на пристроях без курсора редактор нод недоступний
     const hero = h('section', { class: 'hero' },
       h('div', { class: 'hero-grain' }),
       h('div', { class: 'hero-inner' },
@@ -93,8 +93,8 @@ export default {
         h('p', { class: 'lead' }, 'VestraNode — редактор, у якому ви збираєте власні шифрувальники й стего-конвеєри з нодів, а потім ховаєте дані у фото й експортуєте все це в Python. Без коду, з перевіркою типів і стегоаналізом.'),
         h('div', { class: 'product-by' }, 'Продукт ', h('b', {}, 'Raimex Team')),
         h('div', { class: 'cta' },
-          h('a', { class: 'btn pill cta-main', href: '#/projects' }, 'Відкрити проєкти →'),
-          h('a', { class: 'btn pill outline', href: '#/stego' }, 'Стего'),
+          phone ? h('a', { class: 'btn pill cta-main', href: '#/stego' }, 'Відкрити «Стего» →') : h('a', { class: 'btn pill cta-main', href: '#/projects' }, 'Відкрити проєкти →'),
+          !phone && h('a', { class: 'btn pill outline', href: '#/stego' }, 'Стего'),
           h('a', { class: 'btn pill outline', href: '#/analysis' }, 'Стегоаналіз')),
         !authed && h('div', { class: 'hint' }, 'Новий акаунт отримує ', h('b', {}, '100 пакселів'), ' — вистачить на кілька зображень.'),
       ),
@@ -111,7 +111,7 @@ export default {
       EXAMPLES.map((ex, i) => h('article', { class: `example${i % 2 ? ' flip' : ''}` },
         h('div', { class: 'example-art' }, miniGraphSVG(ex.nodes, ex.edges, { width: 740, height: ex.h, uid: `ex${i}` }), ex.photo && photoPair()),
         h('div', { class: 'example-text' }, h('span', { class: 'badge' }, ex.badge), h('h3', {}, ex.title), h('p', {}, ex.text),
-          h('ol', {}, ex.steps.map((s) => h('li', {}, s))), h('a', { class: 'btn ghost', href: '#/projects' }, 'Створити такий проєкт →')))));
+          h('ol', {}, ex.steps.map((s) => h('li', {}, s))), !phone && h('a', { class: 'btn ghost', href: '#/projects' }, 'Створити такий проєкт →')))));
 
     const features = h('section', { class: 'section' },
       h('div', { class: 'section-head' }, h('h2', {}, 'Усе, що потрібно для приховування'), h('p', {}, 'Один сайт: від першої ноди до готового Python-файлу.')),
@@ -128,13 +128,13 @@ export default {
         `${state.pub?.pricing?.py_export?.stars_base ?? 1} ⭐ до ${state.pub?.pricing?.py_export?.stars_step_nodes ?? 20} нод, понад ${state.pub?.pricing?.py_export?.stars_step_nodes ?? 20} — ${(state.pub?.pricing?.py_export?.stars_base ?? 1) + (state.pub?.pricing?.py_export?.stars_per_step ?? 1)} ⭐, далі +${state.pub?.pricing?.py_export?.stars_per_step ?? 1} ⭐ за кожні наступні ${state.pub?.pricing?.py_export?.stars_step_nodes ?? 20} нод (для преміум-акаунтів може бути безкоштовною).`));
 
     const band = h('section', { class: 'band' }, h('h2', {}, 'Готові приховати щось цікаве?'),
-      h('a', { class: 'btn pill cta-main', href: authed ? '#/projects' : '#/login' }, authed ? 'До проєктів →' : 'Увійти й спробувати →'));
+      h('a', { class: 'btn pill cta-main', href: authed ? (phone ? '#/stego' : '#/projects') : '#/login' }, authed ? (phone ? 'До «Стего» →' : 'До проєктів →') : 'Увійти й спробувати →'));
 
     const links = state.pub?.links || {};
     const footer = h('footer', { class: 'footer' },
       h('div', { class: 'footer-grid' },
         h('div', {}, h('div', { class: 'logo' }, 'VESTRANODE'), h('p', { class: 'fine' }, 'Нодовий приховувач даних на базі стего та криптографії.'), h('p', { class: 'fine' }, 'Продукт Raimex Team')),
-        h('div', {}, h('h5', {}, 'Продукт'), h('a', { href: '#/projects' }, 'Проєкти'), h('a', { href: '#/stego' }, 'Стего'), h('a', { href: '#/analysis' }, 'Стегоаналіз'), h('a', { href: '#/help' }, 'Довідка')),
+        h('div', {}, h('h5', {}, 'Продукт'), !phone && h('a', { href: '#/projects' }, 'Проєкти'), h('a', { href: '#/stego' }, 'Стего'), h('a', { href: '#/analysis' }, 'Стегоаналіз'), h('a', { href: '#/help' }, 'Довідка')),
         h('div', {}, h('h5', {}, 'Акаунт'), h('a', { href: '#/profile' }, 'Профіль'), h('a', { href: '#/settings' }, 'Налаштування')),
         h('div', {}, h('h5', {}, 'Спільнота'), h('a', { href: links.youtube_url || '#', target: '_blank', rel: 'noopener' }, 'YouTube'),
           h('a', { href: links.discord_url || '#', target: '_blank', rel: 'noopener' }, 'Discord'))),

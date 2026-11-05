@@ -1,6 +1,6 @@
 // main.js — маршрутизатор, верхня панель з меню аватара, перевірка бекендів, повідомлення про зв'язок
 import { $, h, api, state, store, setUser, onState, toast, applyAppearance, setTheme, LOGO_SVG, fmtInt, backend, checkBackends,
-  applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl } from './core.js';
+  applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor } from './core.js';
 import { installIcons } from './icons.js';
 
 applyAppearance();
@@ -25,6 +25,8 @@ const PUBLIC = new Set(['/', '/login', '/auth', '/help', '/settings']);
 const OPEN = new Set(['/share']);
 // сторінки, де показуємо попередження про запасний (повільніший) бекенд
 const SLOW_PAGES = new Set(['/stego', '/project', '/analysis']);
+// редактор нод: недоступний на пристроях без курсора
+const CURSOR_ONLY = new Set(['/projects', '/project']);
 
 export function parseHash() {
   const raw = location.hash.replace(/^#/, '') || '/';
@@ -71,6 +73,12 @@ function renderNotice(r) {
   box.replaceChildren(...items);
 }
 
+function noCursorPage() {
+  return h('div', { class: 'empty-page' }, h('h2', {}, 'Проєкти доступні лише на комп’ютері'),
+    h('p', { style: { color: 'var(--muted)', maxWidth: '460px', textAlign: 'center' } }, 'Редактор нод потребує миші й великого екрана. На телефоні та пристроях без курсора працюють «Стего» і «Стегоаналіз».'),
+    h('div', { class: 'row-gap' }, h('a', { class: 'btn', href: '#/stego' }, 'Відкрити «Стего»'), h('a', { class: 'btn ghost', href: '#/analysis' }, 'Стегоаналіз')));
+}
+
 function offlinePage() {
   return h('div', { class: 'empty-page' }, h('h2', {}, 'Немає зв\'язку з сервером'),
     h('p', { style: { color: 'var(--muted)', maxWidth: '460px', textAlign: 'center' } }, 'Сторінка потребує сервера, а він зараз не відповідає. Головна сторінка та довідка доступні без нього.'),
@@ -82,12 +90,13 @@ async function route() {
   const r = parseHash();
   if (current?.unmount) { try { await current.unmount(); } catch { /* ігноруємо */ } }
   current = null;
-  $('.avatar-menu')?.remove(); menuOpen = false;        // меню аватара не лишається відкритим після переходу
+  $('.avatar-menu')?.remove(); $('.burger-menu')?.remove(); menuOpen = false;        // меню не лишаються відкритими після переходу
   applyBetterBackend();
   const loader = ROUTES[r.path];
   const root = $('#app');
   root.replaceChildren();
   if (!loader) { root.append(h('div', { class: 'empty-page' }, h('h2', {}, 'Сторінку не знайдено'), h('a', { class: 'btn', href: '#/' }, 'На головну'))); renderTopbar(r); renderNotice(r); return; }
+  if (CURSOR_ONLY.has(r.path) && noCursor()) { renderTopbar(r); renderNotice(r); document.body.dataset.page = 'projects'; applyAppearance(); root.append(noCursorPage()); return; }
   if (!PUBLIC.has(r.path)) await booted;                       // потрібно знати, чи є зв'язок і хто увійшов
   renderNotice(r);
   if (!PUBLIC.has(r.path)) {
@@ -111,7 +120,7 @@ async function route() {
 
 // ---------------------------------------------------------------- верхня панель
 const ICON = {
-  user: '👤', settings: '⚙', folder: '📁', lock: '🔒', chart: '📊', moon: '🌙', yt: '▶', dc: '💬', out: '⎋', help: '❓', admin: '🛡',
+  paxel: '⭐', user: '👤', settings: '⚙', folder: '📁', lock: '🔒', chart: '📊', moon: '🌙', yt: '▶', dc: '💬', out: '⎋', help: '❓', admin: '🛡',
 };
 
 let menuOpen = false;
@@ -120,17 +129,18 @@ function renderTopbar(r) {
   const bar = $('#topbar');
   const links = state.pub?.links || {};
   bar.classList.toggle('transparent', r.path === '/');
+  const phone = noCursor();
   const nav = h('nav', { class: 'nav' },
     h('div', { class: 'nav-dd' }, navDropdown('Продукт ▾', [
-      ['#/projects', 'Редактор нод', 'Збирайте конвеєри з нодів'],
+      !phone && ['#/projects', 'Редактор нод', 'Збирайте конвеєри з нодів'],
       ['#/stego', 'Стего', 'Текст у фото за кілька кліків'],
-      ['#/analysis', 'Стегоаналіз', 'Шум, біти, χ²-атака']])),
+      ['#/analysis', 'Стегоаналіз', 'Шум, біти, χ²-атака']].filter(Boolean))),
     h('a', { href: '/#pricing', onclick: (e) => { e.preventDefault(); scrollToSection('pricing'); } }, 'Пакселі'),
     h('a', { href: '#/help', class: r.path === '/help' ? 'on' : '' }, 'Довідка'),
     h('div', { class: 'nav-dd' }, navDropdown('Ресурси ▾', [
       [links.youtube_url || '#', 'YouTube', 'Відео й уроки', true],
       [links.discord_url || '#', 'Discord', 'Спільнота й підтримка', true]])),
-    h('a', { href: '#/projects', class: r.path === '/projects' ? 'on' : '' }, 'Проєкти'),
+    !phone && h('a', { href: '#/projects', class: r.path === '/projects' ? 'on' : '' }, 'Проєкти'),
   );
 
   const cached = store.get('user', null);
@@ -145,7 +155,34 @@ function renderTopbar(r) {
     right.append(h('a', { class: 'btn ghost', href: '#/login' }, 'Увійти'),
       h('a', { class: 'btn', href: '#/login?tab=register', title: 'Новий акаунт отримує 100 пакселів' }, 'Реєстрація'));
   }
-  bar.replaceChildren(h('a', { class: 'logo', href: '#/' }, h('span', { html: LOGO_SVG }), 'VESTRANODE'), nav, right);
+  right.append(burgerButton());                                    // на вузьких екранах замість меню (CSS ховає його на широких)
+  bar.replaceChildren(h('a', { class: 'logo', href: '#/' }, h('span', { html: LOGO_SVG }), h('span', { class: 'logo-text' }, 'VESTRANODE')), nav, right);
+}
+
+const BURGER_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+
+function burgerButton() {
+  const btn = h('button', { class: 'burger-btn', type: 'button', 'aria-label': 'Меню', 'aria-expanded': 'false', html: BURGER_SVG });
+  btn.onclick = (e) => { e.stopPropagation(); toggleBurgerMenu(btn); };
+  return btn;
+}
+
+function toggleBurgerMenu(btn) {
+  const old = $('.burger-menu');
+  if (old) { old.remove(); btn.setAttribute('aria-expanded', 'false'); return; }
+  $('.avatar-menu')?.remove(); menuOpen = false; $('.avatar-btn')?.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-expanded', 'true');
+  const links = state.pub?.links || {};
+  const close = () => { $('.burger-menu')?.remove(); btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('pointerdown', outside, true); };
+  const outside = (e) => { if (!e.target.closest('.burger-menu') && !e.target.closest('.burger-btn')) close(); };
+  const item = (href, icon, text, ext, onclick) => h('a', { href, target: ext ? '_blank' : null, rel: ext ? 'noopener' : null, onclick: (e) => { close(); if (onclick) { e.preventDefault(); onclick(); } } }, h('span', {}, icon), text);
+  const menu = h('div', { class: 'menu burger-menu' },
+    item('#/stego', ICON.lock, 'Стего'), item('#/analysis', ICON.chart, 'Стегоаналіз'),
+    !noCursor() && item('#/projects', ICON.folder, 'Проєкти'),
+    item('/#pricing', ICON.paxel, 'Пакселі', false, () => scrollToSection('pricing')), item('#/help', ICON.help, 'Довідка'),
+    h('hr'), item(links.youtube_url || '#', ICON.yt, 'YouTube', true), item(links.discord_url || '#', ICON.dc, 'Discord', true));
+  document.body.append(menu);
+  document.addEventListener('pointerdown', outside, true);
 }
 
 function scrollToSection(id) {
@@ -195,7 +232,7 @@ function toggleAvatarMenu(u) {
     h('div', { class: 'who' }, h('b', {}, u.name), h('small', {}, u.email || 'немає зв\'язку з сервером'), u.premium?.active && h('span', { class: 'premium-tag' }, 'ПРЕМІУМ')),
     h('hr'),
     online && item('#/profile', ICON.user, 'Профіль'), item('#/settings', ICON.settings, 'Налаштування'),
-    online && item('#/projects', ICON.folder, 'Проєкти'), online && item('#/stego', ICON.lock, 'Стего'), online && item('#/analysis', ICON.chart, 'Стегоаналіз'),
+    online && !noCursor() && item('#/projects', ICON.folder, 'Проєкти'), online && item('#/stego', ICON.lock, 'Стего'), online && item('#/analysis', ICON.chart, 'Стегоаналіз'),
     item('#/help', ICON.help, 'Довідка'),
     online && u.is_admin && item('#/admin', ICON.admin, 'Адмін-панель'),
     h('hr'),
@@ -213,6 +250,7 @@ function toggleAvatarMenu(u) {
 function boot() {
   installIcons();
   window.addEventListener('hashchange', route);
+  window.matchMedia?.('(any-hover: hover)').addEventListener?.('change', () => route());       // підключили/відключили мишу
   window.addEventListener('scroll', () => $('#topbar').classList.toggle('scrolled', window.scrollY > 30), { passive: true });
   onState(() => renderTopbar(parseHash()));
   onBackend(() => { const r = parseHash(); renderNotice(r); renderTopbar(r); });

@@ -1,5 +1,5 @@
 // help.js — «Довідка»: ліворуч категорії й версії стего, праворуч — пояснення принципу роботи. Працює без бекенда.
-import { h } from '../core.js';
+import { h , noCursor } from '../core.js';
 import { searchField } from '../icons.js';
 
 const B = (...a) => h('b', {}, ...a);
@@ -169,7 +169,7 @@ export default {
       toc.replaceChildren(h('div', { class: 'help-cat-title' }, `${cur.sec.icon} У цьому розділі`),
         ...cur.sec.items.map((i) => h('button', { class: `help-item${i.id === cur.id ? ' on' : ''}`, onclick: () => open(i.id) }, i.title)),
         h('div', { class: 'help-cat-title help-toc-gap' }, 'Швидкі переходи'),
-        h('a', { class: 'help-item', href: '#/stego' }, 'Відкрити «Стего»'), h('a', { class: 'help-item', href: '#/projects' }, 'Мої проєкти'), h('a', { class: 'help-item', href: '#/analysis' }, 'Стегоаналіз фото'));
+        h('a', { class: 'help-item', href: '#/stego' }, 'Відкрити «Стего»'), noCursor() ? null : h('a', { class: 'help-item', href: '#/projects' }, 'Мої проєкти'), h('a', { class: 'help-item', href: '#/analysis' }, 'Стегоаналіз фото'));
     }
     function paintMain() {
       const idx = flat.indexOf(cur), prev = flat[idx - 1], next = flat[idx + 1];
