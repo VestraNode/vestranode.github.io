@@ -120,7 +120,8 @@ export class Lab {
     this.opts = opts;
     this.term = opts.terminal;
     const prefs = store.get('lab', {});
-    this.s = { gradient: 'viridis', norm: 'image', view: 'noise', stegView: 'neighbors', stegView2: 'lsb', chartRange: 'full', chartColor: 'height', blink: '#ff2bd6', ...prefs };
+    this.s = { gradient: 'viridis', norm: 'image', view: 'noise', stegView: 'neighbors', stegView2: 'lsb', chartRange: 'full', chartColor: 'height', blink: '#ffffff', ...prefs };
+    if (!prefs.blink || prefs.blink === '#ff2bd6') this.s.blink = '#ffffff';       // стандартний колір мигання — білий (старе збережене значення за замовчуванням теж стає білим)
     this.data = { photo: null, analysis: null, enc: null, dec: null, hasText: false, threshold: 8, mode: opts.mode || 'encode', encError: null, decError: null, stale: false };
     this.stegViews = []; this.steg = { before: null, after: null, encId: null, view: null, loading: false, error: null };
     this.steg2 = { url: null, view: null, error: null };     // другий вигляд (4-й блок у режимі «Стегоаналіз»)
@@ -323,6 +324,7 @@ export class Lab {
     const used = this.usedCells(), scale = Math.max(1, Math.round(GRID_PX / cols)), W = cols * scale, H = rows * scale;
     const key = [this.analysisVer, this.s.gradient, this.s.norm, W, H, this.s.blink, used ? used.length : '-'].join('|');
     if (this.layers && this.layers.key === key) return this.layers;
+    const [br, bg, bb] = hexToRgb(this.s.blink);
     const lut = lutFor(this.s.gradient), normMax = this.s.norm === 'max' ? a.max_possible : Math.max(1, a._max);
     const make = (w, hh) => { const c = document.createElement('canvas'); c.width = w; c.height = hh; return c; };
     const base = make(cols, rows), bctx = base.getContext('2d'), bimg = bctx.createImageData(cols, rows);
@@ -331,15 +333,29 @@ export class Lab {
       bimg.data[i * 4] = lut[idx * 3]; bimg.data[i * 4 + 1] = lut[idx * 3 + 1]; bimg.data[i * 4 + 2] = lut[idx * 3 + 2]; bimg.data[i * 4 + 3] = 255;
     }
     bctx.putImageData(bimg, 0, 0);
-    let mask = null, glow = null;
+    let mask = null, glow = null, marks = null;
     if (used) {
-      mask = make(cols, rows); const mctx = mask.getContext('2d'), mimg = mctx.createImageData(cols, rows), [br, bg, bb] = hexToRgb(this.s.blink);
+      mask = make(cols, rows); const mctx = mask.getContext('2d'), mimg = mctx.createImageData(cols, rows);
       for (let k = 0; k + 2 < used.length; k += 3) { const r = used[k], c = used[k + 1]; if (r >= rows || c >= cols) continue; const o = (r * cols + c) * 4; mimg.data[o] = br; mimg.data[o + 1] = bg; mimg.data[o + 2] = bb; mimg.data[o + 3] = 255; }
       mctx.putImageData(mimg, 0, 0);
       glow = make(W, H); const g = glow.getContext('2d'); g.imageSmoothingEnabled = false;
       g.filter = `blur(${Math.max(2, scale * 1.2)}px)`; g.drawImage(mask, 0, 0, W, H); g.filter = `blur(${Math.max(6, scale * 4)}px)`; g.drawImage(mask, 0, 0, W, H); g.filter = 'none';
+      // мало чанків (≈10) — на карті це кілька крихітних квадратиків; тому навколо кожного малюємо збільшені «маркери»: світіння, залиту плашку й кільце
+      const count = used.length / 3;
+      if (count > 0 && count <= 400) {
+        const boost = Math.min(5, Math.max(1, Math.sqrt(400 / count) / 1.6)), pad = scale * boost * 1.5, side = scale + scale * (boost - 1) * 0.9;
+        marks = make(W, H); const m = marks.getContext('2d');
+        for (let k = 0; k + 2 < used.length; k += 3) {
+          const r = used[k], c = used[k + 1]; if (r >= rows || c >= cols) continue;
+          const cx = (c + 0.5) * scale, cy = (r + 0.5) * scale, rad = pad * 2.4;
+          const grad = m.createRadialGradient(cx, cy, 0, cx, cy, rad); grad.addColorStop(0, `rgba(${br},${bg},${bb},.75)`); grad.addColorStop(1, `rgba(${br},${bg},${bb},0)`);
+          m.fillStyle = grad; m.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+          m.fillStyle = `rgb(${br},${bg},${bb})`; m.fillRect(cx - side / 2, cy - side / 2, side, side);
+          m.strokeStyle = `rgba(${br},${bg},${bb},.9)`; m.lineWidth = Math.max(2, scale * 0.35 * boost); const ring = side + pad * 0.9; m.strokeRect(cx - ring / 2, cy - ring / 2, ring, ring);
+        }
+      }
     }
-    return (this.layers = { key, base, mask, glow, W, H, normMax });
+    return (this.layers = { key, base, mask, glow, marks, W, H, normMax });
   }
 
   drawGridFrame(now = performance.now()) {
@@ -354,6 +370,7 @@ export class Lab {
       ctx.fillStyle = '#000'; ctx.globalAlpha = 0.45 * p; ctx.fillRect(0, 0, L.W, L.H);
       ctx.globalAlpha = p; ctx.drawImage(L.mask, 0, 0, L.W, L.H);
       ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = p; ctx.drawImage(L.glow, 0, 0);
+      if (L.marks) { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = p; ctx.drawImage(L.marks, 0, 0); }
       ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
     }
   }
