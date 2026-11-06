@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Що таке стеганографія: LSB, ДКП і чанки простими словами — VestraNode</title>
+  <meta name="description" content="Стеганографія ховає сам факт повідомлення. Пояснюємо LSB, підлаштування під шум, чанки та ДКП у JPEG, і чим вони відрізняються від шифрування.">
+  <link rel="canonical" href="https://vn.raimex.space/scho-take-steganografiya/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#7c9cff">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="VestraNode">
+  <meta property="og:title" content="Що таке стеганографія: LSB, ДКП і чанки простими словами">
+  <meta property="og:description" content="Стеганографія ховає сам факт повідомлення. Пояснюємо LSB, підлаштування під шум, чанки та ДКП у JPEG, і чим вони відрізняються від шифрування.">
+  <meta property="og:url" content="https://vn.raimex.space/scho-take-steganografiya/">
+  <meta property="og:image" content="https://vn.raimex.space/img/logo-1024.png">
+  <meta property="og:locale" content="uk_UA">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Що таке стеганографія: LSB, ДКП і чанки простими словами","description":"Стеганографія ховає сам факт повідомлення. Пояснюємо LSB, підлаштування під шум, чанки та ДКП у JPEG, і чим вони відрізняються від шифрування.","inLanguage":"uk","mainEntityOfPage":"https://vn.raimex.space/scho-take-steganografiya/","dateModified":"2026-11-06","author":{"@type":"Organization","name":"Raimex Team"},"publisher":{"@type":"Organization","name":"Raimex Team","logo":{"@type":"ImageObject","url":"https://vn.raimex.space/img/logo-1024.png"}}}</script>
+  <link rel="stylesheet" href="/css/seo.css">
+</head>
+<body>
+  <header class="top"><a class="brand" href="/"><img src="/img/icon-192.png" alt="" width="32" height="32"> VESTRANODE</a>
+    <nav><a href="/#/stego">Стего</a><a href="/#/analysis">Стегоаналіз</a><a href="/#/help">Довідка</a></nav></header>
+  <main>
+    <h1>Що таке стеганографія і як вона працює</h1>
+    <p class="lead">Шифрування ховає зміст повідомлення, стеганографія ховає сам факт, що повідомлення існує. Найчастіше для цього використовують звичайні фото.</p>
+    <h2>LSB: молодші біти пікселів</h2>
+    <p>Колір пікселя — це три числа від 0 до 255. Зміна молодшого біта міняє значення на 1, а людське око цього не помічає. Тож у молодшому біті кожного каналу можна зберігати по одному біту прихованих даних.</p>
+    <p>Мінус простого LSB: кожне перекодування картинки в JPEG руйнує ці біти, а статистичні тести (стегоаналіз) легко знаходять рівномірні зміни.</p>
+    <h2>Чанки й шум</h2>
+    <p>Фото ділять на квадрати (чанки) і оцінюють, наскільки кожен «шумний». У шумних місцях (листя, текстура) зміни непомітні, у гладких (небо) — одразу видні. Версії SChunky та ChunkyV1.1 заповнюють чанки від найшумніших до найтихіших, а в ChunkyV1.1 кожне значення змінюється не більше ніж на 1 у бік меншого шуму (LSB matching).</p>
+    <h2>ДКП: стійкість до JPEG</h2>
+    <p>JPEG зберігає не пікселі, а коефіцієнти дискретного косинусного перетворення блоків 8×8. Якщо ховати біти саме в них із запасом міцності (метод QIM), дані переживають повторне стиснення, зокрема в месенджерах.</p>
+    <h2>Стеганографія чи шифрування</h2>
+    <p>Найкраще їх поєднувати: спершу зашифрувати текст (у VestraNode для цього є нодовий редактор із шифрами), потім сховати результат у фото. Тоді навіть той, хто знайде дані, не прочитає їх без ключа.</p>
+    <p><a class="cta" href="/#/stego">Спробувати у VestraNode →</a></p>
+    <aside><h2>Читайте також</h2>
+      <ul>
+      <li><a href="/stego-v-telegram/">Як сховати текст у фото, щоб він пережив Telegram</a></li>
+      <li><a href="/steganaliz-foto/">Стегоаналіз фото: як знайти приховані дані</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer>© Raimex Team · <a href="/">VestraNode — нодовий приховувач даних</a></footer>
+</body>
+</html>

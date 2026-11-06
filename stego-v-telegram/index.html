@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Як сховати текст у фото, щоб він пережив Telegram — VestraNode</title>
+  <meta name="description" content="Telegram перекодовує фото в JPEG і знищує дані в молодших бітах. Розбираємо, як ChunkyV2QIM ховає текст у коефіцієнтах ДКП і перевіряє, що він доживе до адресата.">
+  <link rel="canonical" href="https://vn.raimex.space/stego-v-telegram/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#7c9cff">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="VestraNode">
+  <meta property="og:title" content="Як сховати текст у фото, щоб він пережив Telegram">
+  <meta property="og:description" content="Telegram перекодовує фото в JPEG і знищує дані в молодших бітах. Розбираємо, як ChunkyV2QIM ховає текст у коефіцієнтах ДКП і перевіряє, що він доживе до адресата.">
+  <meta property="og:url" content="https://vn.raimex.space/stego-v-telegram/">
+  <meta property="og:image" content="https://vn.raimex.space/img/logo-1024.png">
+  <meta property="og:locale" content="uk_UA">
+  <meta name="twitter:card" content="summary">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Як сховати текст у фото, щоб він пережив Telegram","description":"Telegram перекодовує фото в JPEG і знищує дані в молодших бітах. Розбираємо, як ChunkyV2QIM ховає текст у коефіцієнтах ДКП і перевіряє, що він доживе до адресата.","inLanguage":"uk","mainEntityOfPage":"https://vn.raimex.space/stego-v-telegram/","dateModified":"2026-11-06","author":{"@type":"Organization","name":"Raimex Team"},"publisher":{"@type":"Organization","name":"Raimex Team","logo":{"@type":"ImageObject","url":"https://vn.raimex.space/img/logo-1024.png"}}}</script>
+  <link rel="stylesheet" href="/css/seo.css">
+</head>
+<body>
+  <header class="top"><a class="brand" href="/"><img src="/img/icon-192.png" alt="" width="32" height="32"> VESTRANODE</a>
+    <nav><a href="/#/stego">Стего</a><a href="/#/analysis">Стегоаналіз</a><a href="/#/help">Довідка</a></nav></header>
+  <main>
+    <h1>Стеганографія в Telegram: як сховати текст у фото, щоб він вижив</h1>
+    <p class="lead">Звичайне приховування в молодших бітах пікселів (LSB) не переживає надсилання «як фото»: Telegram зменшує картинку та перекодовує її в JPEG. Є спосіб, який це витримує.</p>
+    <h2>Що Telegram робить із фото</h2>
+    <p>Коли ви надсилаєте картинку як фото, клієнт зменшує більшу сторону приблизно до 1280 пікселів і стискає зображення в JPEG із втратами. Молодші біти пікселів при цьому перемішуються, тож дані, сховані методом LSB, зникають.</p>
+    <p>Якщо ж надіслати картинку як файл, Telegram її не чіпає, але так роблять рідко: фото в чаті виглядає звичніше.</p>
+    <h2>Дані в коефіцієнтах JPEG</h2>
+    <p>JPEG ділить яскравість на блоки 8×8 і зберігає кожен блок як 64 коефіцієнти дискретного косинусного перетворення (ДКП, DCT). Стиснення округлює їх із відомим кроком, але середні коефіцієнти змінюються порівняно мало.</p>
+    <p>Версія ChunkyV2QIM у VestraNode кодує біти методом QIM (Quantization Index Modulation): значення коефіцієнта підтягується до однієї з двох решіток із кроком, більшим за крок JPEG. Після повторного стиснення біт читається правильно, бо значення зсунулося менше ніж на чверть кроку.</p>
+    <h2>Перевірка до відправлення</h2>
+    <p>Кодер зберігає результат як JPEG і перекодовує його моделлю Telegram (якість 80, 70 і 60), після чого розкодовує текст. Якщо хоч один крок не проходить, він підсилює запис. Якщо не допомагає, ви отримуєте помилку з порадами для саме цього фото: скоротити текст, обрати фото з текстурою чи нормальною експозицією.</p>
+    <p>Для надійності додається корекція помилок Ріда—Соломона, а біти перемішуються за ключем.</p>
+    <h2>Обмеження</h2>
+    <p>Місткість невелика: для фото 1280×800 це приблизно від 2 до 10 КБ залежно від надійності. Розмір фото при розкодуванні мусить лишатися як є, а Telegram не публікує свій алгоритм стиснення, тому перед важливою відправкою перевірте на собі: надішліть фото собі й розкодуйте.</p>
+    <p><a class="cta" href="/#/stego">Спробувати у VestraNode →</a></p>
+    <aside><h2>Читайте також</h2>
+      <ul>
+      <li><a href="/yak-prihovati-tekst-u-foto/">Як сховати текст у фото онлайн: покроково</a></li>
+      <li><a href="/scho-take-steganografiya/">Що таке стеганографія: LSB, ДКП і чанки простими словами</a></li>
+      </ul>
+    </aside>
+  </main>
+  <footer>© Raimex Team · <a href="/">VestraNode — нодовий приховувач даних</a></footer>
+</body>
+</html>

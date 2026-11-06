@@ -135,6 +135,7 @@ export default {
       h('div', { class: 'footer-grid' },
         h('div', {}, h('div', { class: 'logo' }, 'VESTRANODE'), h('p', { class: 'fine' }, 'Нодовий приховувач даних на базі стего та криптографії.'), h('p', { class: 'fine' }, 'Продукт Raimex Team')),
         h('div', {}, h('h5', {}, 'Продукт'), !phone && h('a', { href: '#/projects' }, 'Проєкти'), h('a', { href: '#/stego' }, 'Стего'), h('a', { href: '#/analysis' }, 'Стегоаналіз'), h('a', { href: '#/help' }, 'Довідка')),
+        h('div', {}, h('h5', {}, 'Статті'), h('a', { href: '/stego-v-telegram/' }, 'Стего в Telegram'), h('a', { href: '/yak-prihovati-tekst-u-foto/' }, 'Сховати текст у фото'), h('a', { href: '/scho-take-steganografiya/' }, 'Що таке стеганографія'), h('a', { href: '/steganaliz-foto/' }, 'Стегоаналіз фото'), h('a', { href: '/redaktor-nod-shifruvalniki/' }, 'Редактор нод')),
         h('div', {}, h('h5', {}, 'Акаунт'), h('a', { href: '#/profile' }, 'Профіль'), h('a', { href: '#/settings' }, 'Налаштування')),
         h('div', {}, h('h5', {}, 'Спільнота'), h('a', { href: links.youtube_url || '#', target: '_blank', rel: 'noopener' }, 'YouTube'),
           h('a', { href: links.discord_url || '#', target: '_blank', rel: 'noopener' }, 'Discord'))),

@@ -89,7 +89,7 @@ body[data-page="home"] #topbar { color: #fff; }
 .band { margin: 5.625rem 1.5rem 0; padding: 4.375rem 1.5rem; text-align: center; border-radius: 2rem; color: #fff; background: radial-gradient(60% 120% at 0% 100%, rgba(255, 61, 113, .45), transparent 70%), radial-gradient(60% 120% at 100% 100%, rgba(25, 211, 232, .45), transparent 70%), #0a0b0f; border: 1px solid rgba(255, 255, 255, .1); display: grid; gap: 1.625rem; justify-items: center; }
 .band h2 { font-size: clamp(1.75rem, 4vw, 2.875rem); font-weight: 800; letter-spacing: -1px; }
 .footer { margin-top: 5.625rem; padding: 3.5rem 1.75rem 1.625rem; color: #fff; border-top: 1px solid rgba(255, 255, 255, .1); background: #050507; }
-.footer-grid { max-width: var(--land); margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 1.875rem; }
+.footer-grid { max-width: var(--land); margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; gap: 1.875rem; }
 .footer h5 { margin: 0 0 0.75rem; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255, 255, 255, .5); }
 .footer a { display: block; padding: 0.25rem 0; color: rgba(255, 255, 255, .8); } .footer a:hover { color: var(--accent); }
 .footer .fine { text-align: left; margin: 0.625rem 0 0; }

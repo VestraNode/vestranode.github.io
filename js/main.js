@@ -28,6 +28,28 @@ const SLOW_PAGES = new Set(['/stego', '/project', '/analysis']);
 // редактор нод: недоступний на пристроях без курсора
 const CURSOR_ONLY = new Set(['/projects', '/project']);
 
+// заголовок і опис сторінки (для вкладки браузера, історії та закладок; пошуковики індексують лише головну, решта сторінок — за хеш-адресами)
+const BASE_TITLE = 'VestraNode';
+const PAGE_META = {
+  '/': ['VestraNode — нодовий приховувач даних', 'Редактор нод для шифрувальників і стего-конвеєрів: ховайте дані у фото (стійко до Telegram), аналізуйте шум і експортуйте проєкт у Python.'],
+  '/stego': ['Стего — сховати текст у фото онлайн', 'Сховайте текст у фото за кілька кліків: версії SChunky, ChunkyV1.1, ChunkyV2QIM (переживає Telegram) та BasicV1–V4, автоперевірка й завантаження результату.'],
+  '/analysis': ['Стегоаналіз фото онлайн', 'Карти шуму, молодшого біта й хі-квадрат, відхилення від сусідів: перевірте, чи є у фото приховані дані.'],
+  '/help': ['Довідка', 'Як працює VestraNode: ноди, версії стего, стегоаналіз, пакселі, експорт у Python.'],
+  '/projects': ['Проєкти', 'Ваші проєкти з нод: шифрувальники й стего-конвеєри.'],
+  '/project': ['Проєкт', 'Редактор нод і робочий режим проєкту.'],
+  '/profile': ['Профіль', 'Профіль, баланс пакселів і історія дій.'],
+  '/settings': ['Налаштування', 'Тема, масштаб і параметри інтерфейсу.'],
+  '/login': ['Вхід і реєстрація', 'Увійдіть у VestraNode через пошту, Google чи Discord.'],
+  '/admin': ['Адмін-панель', 'Керування сайтом.'],
+  '/share': ['Спільний проєкт', 'Проєкт, яким поділилися за посиланням.'],
+};
+
+function setPageMeta(path) {
+  const [title, desc] = PAGE_META[path] || PAGE_META['/'];
+  document.title = path === '/' ? title : `${title} — ${BASE_TITLE}`;
+  document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+}
+
 export function parseHash() {
   const raw = location.hash.replace(/^#/, '') || '/';
   const [pathPart, query = ''] = raw.split('?');
@@ -106,6 +128,7 @@ async function route() {
   }
   renderTopbar(r);
   document.body.dataset.page = r.path.slice(1) || 'home';
+  setPageMeta(r.path);
   applyAppearance();                       // тема залежить від сторінки (головна — завжди темна)
   window.scrollTo(0, 0);
   try {
