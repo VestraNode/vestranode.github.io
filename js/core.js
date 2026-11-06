@@ -66,7 +66,12 @@ async function probe(b) {
 
 /** Перевіряє всі бекенди одночасно й обирає перший робочий за пріоритетом. immediate=false: не міняти робочий бекенд посеред роботи. */
 export async function checkBackends({ immediate = false } = {}) {
-  await Promise.all(backend.list.map(probe));
+  // перевіряємо по черзі й зупиняємось на першому робочому: запасні адреси (наприклад, Tailscale) не чіпаємо без потреби —
+  // інакше Chrome питає дозвіл «доступ до локальної мережі», коли ім'я запасного бекенда на цьому ПК веде в приватну мережу
+  for (const b of backend.list) {
+    await probe(b);
+    if (b.alive) { backend.list.slice(backend.list.indexOf(b) + 1).forEach((x) => { x.alive = null; x.ms = null; }); break; }
+  }
   const first = backend.list.findIndex((b) => b.alive);
   const cur = backend.index;
   const wasChecked = backend.checked;
