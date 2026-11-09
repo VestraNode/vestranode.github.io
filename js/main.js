@@ -117,7 +117,12 @@ async function route() {
   const loader = ROUTES[r.path];
   const root = $('#app');
   root.replaceChildren();
-  if (!loader) { root.append(h('div', { class: 'empty-page' }, h('h2', {}, 'Сторінку не знайдено'), h('a', { class: 'btn', href: '#/' }, 'На головну'))); renderTopbar(r); renderNotice(r); return; }
+  if (!loader) {                                       // невідомий хеш-адрес (#/щось) — та сама сторінка 404, що й для невідомого шляху
+    root.append(h('div', { class: 'empty-page' }, h('h2', {}, 'Сторінку не знайдено'), h('a', { class: 'btn', href: '#/' }, 'На головну')));
+    renderTopbar(r); renderNotice(r);
+    location.replace('/404.html');
+    return;
+  }
   if (CURSOR_ONLY.has(r.path) && noCursor()) { renderTopbar(r); renderNotice(r); document.body.dataset.page = 'projects'; applyAppearance(); root.append(noCursorPage()); return; }
   if (!PUBLIC.has(r.path)) await booted;                       // потрібно знати, чи є зв'язок і хто увійшов
   renderNotice(r);
