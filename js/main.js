@@ -1,6 +1,6 @@
 // main.js — маршрутизатор, верхня панель з меню аватара, перевірка бекендів, повідомлення про зв'язок
 import { $, h, api, state, store, setUser, onState, toast, applyAppearance, setTheme, LOGO_SVG, fmtInt, backend, checkBackends,
-  applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor } from './core.js';
+  applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor, emitState } from './core.js';
 import { installIcons } from './icons.js';
 
 applyAppearance();
@@ -74,6 +74,7 @@ async function loadSession() {
   try {
     const pub = await api('/api/public', { silent: true });
     state.pub = { ...state.pub, ...pub };
+    emitState();                                           // довідка вмикає помічника, коли з'ясовується, що він є
   } catch { /* лишаються значення з config.js */ }
   if (!getToken()) { setUser(null); return; }
   try {
@@ -132,10 +133,22 @@ function offlinePage() {
       h('a', { class: 'btn ghost', href: '#/help' }, 'Відкрити довідку')));
 }
 
+// route() можуть викликати кілька подій майже одночасно (hashchange, відновлення входу, зміна пристрою вводу, перевірка зв'язку).
+// Кожен виклик отримує номер; застарілий виклик після будь-якого await просто зупиняється, а новий чекає, поки попередня сторінка
+// домонтується, — інакше сторінки малювались у #app двічі.
+let routeSeq = 0, inflight = Promise.resolve();
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
 async function route() {
+  const seq = ++routeSeq;
+  const stale = () => seq !== routeSeq;
+  await Promise.race([inflight, sleep(4000)]);
+  if (stale()) return;
   const r = parseHash();
-  if (current?.unmount) { try { await current.unmount(); } catch { /* ігноруємо */ } }
+  const old = current;
   current = null;
+  if (old?.unmount) { try { await old.unmount(); } catch { /* ігноруємо */ } }
+  if (stale()) return;
   $('.avatar-menu')?.remove(); $('.burger-menu')?.remove(); menuOpen = false;        // меню не лишаються відкритими після переходу
   applyBetterBackend();
   const loader = ROUTES[r.path];
@@ -148,7 +161,7 @@ async function route() {
     return;
   }
   if (CURSOR_ONLY.has(r.path) && noCursor()) { renderTopbar(r); renderNotice(r); document.body.dataset.page = 'projects'; applyAppearance(); root.append(noCursorPage()); return; }
-  if (!PUBLIC.has(r.path)) await booted;                       // потрібно знати, чи є зв'язок і хто увійшов
+  if (!PUBLIC.has(r.path)) { await booted; if (stale()) return; }          // потрібно знати, чи є зв'язок і хто увійшов
   renderNotice(r);
   if (!PUBLIC.has(r.path)) {
     if (backend.down || (sessionPending && !state.user && !OPEN.has(r.path))) { renderTopbar(r); root.append(offlinePage()); recoverSession(); return; }
@@ -160,13 +173,20 @@ async function route() {
   setPageMeta(r.path);
   applyAppearance();                       // тема залежить від сторінки (головна — завжди темна)
   window.scrollTo(0, 0);
+  let finished;
+  inflight = new Promise((res) => { finished = res; });
   try {
     const mod = await loader();
-    current = (await mod.default.mount(root, r)) || null;
-    if (current && typeof current === 'function') current = { unmount: current };
+    if (stale()) return;
+    const handle = (await mod.default.mount(root, r)) || null;
+    const view = typeof handle === 'function' ? { unmount: handle } : handle;
+    if (stale()) { try { await view?.unmount?.(); } catch { /* ігноруємо */ } return; }     // поки сторінка вантажилась, користувач уже пішов далі
+    current = view;
   } catch (e) {
     console.error(e);
     toast('Не вдалося відкрити сторінку: ' + e.message, 'error');
+  } finally {
+    finished();
   }
 }
 
