@@ -344,14 +344,14 @@ export class Lab {
       const count = used.length / 3;
       if (count > 0 && count <= 400) {
         const boost = Math.min(5, Math.max(1, Math.sqrt(400 / count) / 1.6)), pad = scale * boost * 1.5, side = scale + scale * (boost - 1) * 0.9;
-        marks = make(W, H); const m = marks.getContext('2d');
+        marks = make(W, H); const m = marks.getContext('2d'); const dk = (v, f) => Math.round(v * f); // квадрати й кільця — набагато темніші за підсвітку
         for (let k = 0; k + 2 < used.length; k += 3) {
           const r = used[k], c = used[k + 1]; if (r >= rows || c >= cols) continue;
           const cx = (c + 0.5) * scale, cy = (r + 0.5) * scale, rad = pad * 2.4;
           const grad = m.createRadialGradient(cx, cy, 0, cx, cy, rad); grad.addColorStop(0, `rgba(${br},${bg},${bb},.75)`); grad.addColorStop(1, `rgba(${br},${bg},${bb},0)`);
           m.fillStyle = grad; m.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
-          m.fillStyle = `rgb(${br},${bg},${bb})`; m.fillRect(cx - side / 2, cy - side / 2, side, side);
-          m.strokeStyle = `rgba(${br},${bg},${bb},.9)`; m.lineWidth = Math.max(2, scale * 0.35 * boost); const ring = side + pad * 0.9; m.strokeRect(cx - ring / 2, cy - ring / 2, ring, ring);
+          m.fillStyle = `rgb(${dk(br, .3)},${dk(bg, .3)},${dk(bb, .3)})`; m.fillRect(cx - side / 2, cy - side / 2, side, side);
+          m.strokeStyle = `rgb(${dk(br, .14)},${dk(bg, .14)},${dk(bb, .14)})`; m.lineWidth = Math.max(2, scale * 0.35 * boost); const ring = side + pad * 0.9; m.strokeRect(cx - ring / 2, cy - ring / 2, ring, ring);
         }
       }
     }
