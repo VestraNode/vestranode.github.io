@@ -64,8 +64,13 @@ export const go = (to) => { if (location.hash.replace(/^#/, '') === to) route();
 let current = null, booted = null;
 
 // ---------------------------------------------------------------- сеанс і зв'язок
+// sessionPending: токен збережено, але сервер ще не підтвердив вхід (його перезапускають або він тимчасово недоступний).
+// Токен у такому разі НЕ видаляємо: пробуємо знову, щойно сервер відповість, і до того показуємо збережений профіль.
+let sessionPending = false, recoverTimer = 0;
+
 async function loadSession() {
-  if (backend.index < 0) return;
+  sessionPending = false;
+  if (backend.index < 0) { sessionPending = !!getToken(); return; }
   try {
     const pub = await api('/api/public', { silent: true });
     state.pub = { ...state.pub, ...pub };
@@ -74,7 +79,26 @@ async function loadSession() {
   try {
     const me = await api('/api/me', { silent: true });
     if (me.user) { setUser(me.user); await refreshResourceToken(); } else { setToken(null); setUser(null); if (me.banned) toast('Ваш акаунт заблоковано.', 'error'); }
-  } catch (e) { if (!e.offline) { setToken(null); setUser(null); } }
+  } catch (e) {
+    if (e.status === 401 || e.status === 403) { setToken(null); setUser(null); }       // сервер чітко сказав, що токен недійсний
+    else sessionPending = true;                                                         // немає зв'язку, 502/503 під час перезапуску тощо
+  }
+}
+
+/** Повторна спроба підтвердити вхід, поки сервер не відповість; після успіху відкриває сторінку заново (вона могла показати «вхід» чи «немає зв'язку»). */
+async function recoverSession() {
+  clearTimeout(recoverTimer);
+  if (!sessionPending) return;
+  if (backend.index < 0) await checkBackends({ immediate: true });
+  if (backend.index >= 0) {
+    await loadSession();
+    if (!sessionPending) {
+      renderTopbar(parseHash()); renderNotice(parseHash());
+      const path = parseHash().path;
+      if (state.user && (path === '/login' || !PUBLIC.has(path))) route();
+    }
+  }
+  if (sessionPending) recoverTimer = setTimeout(recoverSession, 4000);
 }
 
 export async function afterLogin(token) {
@@ -127,7 +151,7 @@ async function route() {
   if (!PUBLIC.has(r.path)) await booted;                       // потрібно знати, чи є зв'язок і хто увійшов
   renderNotice(r);
   if (!PUBLIC.has(r.path)) {
-    if (backend.down) { renderTopbar(r); root.append(offlinePage()); return; }
+    if (backend.down || (sessionPending && !state.user && !OPEN.has(r.path))) { renderTopbar(r); root.append(offlinePage()); recoverSession(); return; }
     if (!state.user && !OPEN.has(r.path)) { go('/login?next=' + encodeURIComponent(r.raw)); return; }
     if (r.path === '/admin' && !state.user.is_admin) { root.append(h('div', { class: 'empty-page' }, h('h2', {}, 'Немає доступу'), h('p', { style: { color: 'var(--muted)' } }, 'Ця сторінка лише для адміністраторів.'), h('a', { class: 'btn', href: '#/' }, 'На головну'))); renderTopbar(r); return; }
   }
@@ -177,7 +201,7 @@ function renderTopbar(r) {
     right.append(
       h('a', { class: 'paxel-chip', href: '#/profile', title: 'Баланс пакселів' }, h('i'), `${fmtInt(state.user.paxels)}`, h('small', {}, 'пакс.')),
       avatarButton(state.user));
-  } else if (backend.down && cached && getToken()) {
+  } else if ((backend.down || sessionPending) && cached && getToken()) {
     right.append(avatarButton({ name: cached.name, avatar: cached.avatar, email: '', premium: {} }));      // без зв'язку показуємо кешований профіль
   } else {
     right.append(h('a', { class: 'btn ghost', href: '#/login' }, 'Увійти'),
@@ -281,14 +305,14 @@ function boot() {
   window.matchMedia?.('(any-hover: hover)').addEventListener?.('change', () => route());       // підключили/відключили мишу
   window.addEventListener('scroll', () => $('#topbar').classList.toggle('scrolled', window.scrollY > 30), { passive: true });
   onState(() => renderTopbar(parseHash()));
-  onBackend(() => { const r = parseHash(); renderNotice(r); renderTopbar(r); });
+  onBackend(() => { const r = parseHash(); renderNotice(r); renderTopbar(r); if (sessionPending && backend.index >= 0) recoverSession(); });
   // головна й довідка показуються одразу, не чекаючи перевірки бекендів
   booted = (async () => {
     await checkBackends({ immediate: true });
     startBackendWatch();
     await loadSession();
   })();
-  booted.then(() => { renderTopbar(parseHash()); renderNotice(parseHash()); });
+  booted.then(() => { renderTopbar(parseHash()); renderNotice(parseHash()); if (sessionPending) recoverSession(); });
   route();
 }
 

@@ -2,7 +2,9 @@
 import { h, api } from './core.js';
 import { ico, hasIcon } from './icons.js';
 
-const STORE = 'vn_assistant_chat';
+// розмова живе в пам'яті сторінки: переходи по сайту її зберігають, а перезавантаження (F5, нова вкладка) починає чат заново
+let sharedHistory = [];
+try { sessionStorage.removeItem('vn_assistant_chat'); } catch { /* ігноруємо */ }
 const MAX_LEN = 600;
 const SUGGEST = ['Як сховати текст у фото?', 'Яку версію стего обрати?', 'Що таке пакселі й як їх купити?', 'Як надіслати фото через Telegram, щоб дані не зникли?'];
 
@@ -75,8 +77,7 @@ const EXTERNAL = /^https:\/\/(vn\.raimex\.space|github\.com\/VestraNode\/Chunky)
 
 /** helpIds — відомі id статей довідки; openHelp(id) — відкрити статтю без перезавантаження сторінки. */
 export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
-  let history = [];
-  try { history = JSON.parse(sessionStorage.getItem(STORE) || '[]').filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string'); } catch { history = []; }
+  let history = sharedHistory;
   let busy = false;
 
   const list = h('div', { class: 'as-list', role: 'log', 'aria-live': 'polite' });
@@ -91,7 +92,7 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
     h('div', { class: 'as-foot' }, input, send),
     modelLine);
 
-  const save = () => { try { sessionStorage.setItem(STORE, JSON.stringify(history.slice(-20))); } catch { /* ігноруємо */ } };
+  const save = () => { if (history.length > 20) history.splice(0, history.length - 20); };
   const scroll = () => { list.scrollTop = list.scrollHeight; };
   // гіперпосилання з відповіді: лише перевірені адреси (стаття довідки, сторінка сайту, наш репозиторій); усе інше показуємо звичайним текстом
   function link(label, href) {
@@ -149,7 +150,7 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
   input.addEventListener('input', fit);
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(input.value); } });
   send.addEventListener('click', () => ask(input.value));
-  clear.addEventListener('click', () => { history = []; save(); paint(); });
+  clear.addEventListener('click', () => { history.length = 0; paint(); });
   close.addEventListener('click', () => root.classList.remove('open'));
   paint();
   return { el: root, open: () => { root.classList.add('open'); input.focus(); }, toggle: () => root.classList.toggle('open') };
