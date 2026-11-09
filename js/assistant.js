@@ -5,13 +5,13 @@ const STORE = 'vn_assistant_chat';
 const MAX_LEN = 600;
 const SUGGEST = ['Як сховати текст у фото?', 'Яку версію стего обрати?', 'Що таке пакселі й як їх купити?', 'Як надіслати фото через Telegram, щоб дані не зникли?'];
 
-function inline(text) {
+function inline(text, link) {
   const out = [];
-  const re = /\*\*(.+?)\*\*|`([^`]+)`/g;
+  const re = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)/g;
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(m[1] !== undefined ? h('b', {}, m[1]) : h('code', {}, m[2]));
+    out.push(m[1] !== undefined ? h('b', {}, m[1]) : m[2] !== undefined ? h('code', {}, m[2]) : link(m[3], m[4]));
     last = re.lastIndex;
   }
   if (last < text.length) out.push(text.slice(last));
@@ -19,7 +19,7 @@ function inline(text) {
 }
 
 /** Мінімальний безпечний рендер відповіді: **жирний**, `код`, списки; усе інше — звичайний текст. */
-function renderAnswer(text) {
+function renderAnswer(text, link) {
   const nodes = [];
   let list = null;
   for (const raw of String(text).split('\n')) {
@@ -28,10 +28,10 @@ function renderAnswer(text) {
     if (bullet || num) {
       const tag = bullet ? 'ul' : 'ol';
       if (!list || list.tag !== tag) { list = { tag, el: h(tag, {}) }; nodes.push(list.el); }
-      list.el.append(h('li', {}, ...inline((bullet || num)[1])));
+      list.el.append(h('li', {}, ...inline((bullet || num)[1], link)));
     } else {
       list = null;
-      if (line) nodes.push(h('p', {}, ...inline(line.replace(/^#{1,4}\s+/, ''))));
+      if (line) nodes.push(h('p', {}, ...inline(line.replace(/^#{1,4}\s+/, ''), link)));
     }
   }
   return nodes;
@@ -65,7 +65,11 @@ function reveal(box, done) {
   }, step);
 }
 
-export function createAssistant() {
+const PAGES = new Set(['/stego', '/analysis', '/projects', '/help', '/profile', '/settings']);
+const EXTERNAL = /^https:\/\/(vn\.raimex\.space|github\.com\/VestraNode\/Chunky)(\/[\w\-./#?=&%]*)?$/;
+
+/** helpIds — відомі id статей довідки; openHelp(id) — відкрити статтю без перезавантаження сторінки. */
+export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
   let history = [];
   try { history = JSON.parse(sessionStorage.getItem(STORE) || '[]').filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string'); } catch { history = []; }
   let busy = false;
@@ -84,7 +88,21 @@ export function createAssistant() {
 
   const save = () => { try { sessionStorage.setItem(STORE, JSON.stringify(history.slice(-20))); } catch { /* ігноруємо */ } };
   const scroll = () => { list.scrollTop = list.scrollHeight; };
-  const bubble = (role, content) => h('div', { class: `as-msg ${role}` }, ...(role === 'assistant' ? renderAnswer(content) : [content]));
+  // гіперпосилання з відповіді: лише перевірені адреси (стаття довідки, сторінка сайту, наш репозиторій); усе інше показуємо звичайним текстом
+  function link(label, href) {
+    const help = /^#\/help\/([\w-]+)$/.exec(href);
+    if (help && helpIds.has(help[1])) {
+      return h('a', { class: 'as-link', href, onclick: (e) => {
+        if (!openHelp) return;
+        e.preventDefault(); openHelp(help[1]);
+        if (getComputedStyle(root).position === 'fixed') root.classList.remove('open');      // на вузьких екранах панель закриває статтю — ховаємо її
+      } }, label);
+    }
+    if (/^#(\/[a-z]+)$/.test(href) && PAGES.has(href.slice(1))) return h('a', { class: 'as-link', href }, label);
+    if (EXTERNAL.test(href)) return h('a', { class: 'as-link', href, target: '_blank', rel: 'noopener noreferrer' }, label);
+    return label;
+  }
+  const bubble = (role, content) => h('div', { class: `as-msg ${role}` }, ...(role === 'assistant' ? renderAnswer(content, link) : [content]));
   const showModel = () => {
     const last = [...history].reverse().find((m) => m.role === 'assistant' && m.model);
     modelLine.textContent = last ? `Модель: ${modelName(last.model)}` : 'Модель підбирається автоматично (безкоштовні моделі OpenRouter)';

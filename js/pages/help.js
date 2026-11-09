@@ -187,7 +187,7 @@ export default {
       if (on && !chat) {
         const { createAssistant } = await import('../assistant.js');
         if (gone || chat) return;
-        chat = createAssistant();
+        chat = createAssistant({ helpIds: new Set(flat.map((i) => i.id)), openHelp: (id) => open(id) });
         launch = h('button', { class: 'btn as-launch', type: 'button', onclick: () => chat.toggle() }, '💬 Помічник');
         content.classList.add('has-chat'); content.append(chat.el); root.append(launch);
       } else if (!on && chat) {
