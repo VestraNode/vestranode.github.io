@@ -1,5 +1,5 @@
 // help.js — «Довідка»: ліворуч категорії й версії стего, праворуч — пояснення принципу роботи. Працює без бекенда.
-import { h , noCursor } from '../core.js';
+import { h, noCursor, state, backend, onState, onBackend } from '../core.js';
 import { searchField } from '../icons.js';
 
 const B = (...a) => h('b', {}, ...a);
@@ -178,6 +178,24 @@ export default {
     }
     search.oninput = paintSide;
     paintSide(); paintMain(); paintToc();
-    root.append(h('div', { class: 'help-page' }, side, h('div', { class: 'help-content' }, main, toc)));
+    const content = h('div', { class: 'help-content' }, main, toc);
+    root.append(h('div', { class: 'help-page' }, side, content));
+    // чат-помічник праворуч: з'являється, коли сервер доступний і помічник увімкнено (довідка сама працює й без сервера)
+    let chat = null, launch = null, gone = false;
+    async function syncChat() {
+      const on = !!state.pub?.assistant && backend.index >= 0;
+      if (on && !chat) {
+        const { createAssistant } = await import('../assistant.js');
+        if (gone || chat) return;
+        chat = createAssistant();
+        launch = h('button', { class: 'btn as-launch', type: 'button', onclick: () => chat.toggle() }, '💬 Помічник');
+        content.classList.add('has-chat'); content.append(chat.el); root.append(launch);
+      } else if (!on && chat) {
+        chat.el.remove(); launch.remove(); content.classList.remove('has-chat'); chat = launch = null;
+      }
+    }
+    const offs = [onState(syncChat), onBackend(syncChat)];
+    syncChat();
+    return () => { gone = true; offs.forEach((off) => off()); launch?.remove(); chat?.el.remove(); };
   },
 };
