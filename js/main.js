@@ -73,7 +73,7 @@ async function loadSession() {
   if (backend.index < 0) { sessionPending = !!getToken(); return; }
   try {
     const pub = await api('/api/public', { silent: true });
-    state.pub = { ...state.pub, ...pub };
+    state.pub = { ...state.pub, ...pub, loaded: true };
     emitState();                                           // довідка вмикає помічника, коли з'ясовується, що він є
   } catch { /* лишаються значення з config.js */ }
   if (!getToken()) { setUser(null); return; }

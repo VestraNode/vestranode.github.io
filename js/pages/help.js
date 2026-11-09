@@ -1,6 +1,7 @@
 // help.js — «Довідка»: ліворуч категорії й версії стего, праворуч — пояснення принципу роботи. Працює без бекенда.
 import { h, noCursor, state, backend, onState, onBackend } from '../core.js';
 import { searchField, ico } from '../icons.js';
+import { createAssistant } from '../assistant.js';
 
 const B = (...a) => h('b', {}, ...a);
 const P = (...a) => h('p', {}, ...a);
@@ -180,22 +181,23 @@ export default {
     paintSide(); paintMain(); paintToc();
     const content = h('div', { class: 'help-content' }, main, toc);
     root.append(h('div', { class: 'help-page' }, side, content));
-    // чат-помічник праворуч: з'являється, коли сервер доступний і помічник увімкнено (довідка сама працює й без сервера)
-    let chat = null, launch = null, gone = false;
-    async function syncChat() {
-      const on = !!state.pub?.assistant && backend.index >= 0;
-      if (on && !chat) {
-        const { createAssistant } = await import('../assistant.js');
-        if (gone || chat) return;
-        chat = createAssistant({ helpIds: new Set(flat.map((i) => i.id)), openHelp: (id) => open(id) });
-        launch = h('button', { class: 'btn as-launch', type: 'button', onclick: () => chat.toggle() }, ico('chat'), ' Помічник');
-        content.classList.add('has-chat'); content.append(chat.el); root.append(launch);
-      } else if (!on && chat) {
-        chat.el.remove(); launch.remove(); content.classList.remove('has-chat'); chat = launch = null;
+    // чат-помічник праворуч: вікно є одразу й завжди; поки сервер не відповів — показує стан підключення, а потім вмикається
+    const chat = createAssistant({ helpIds: new Set(flat.map((i) => i.id)), openHelp: (id) => open(id) });
+    const launch = h('button', { class: 'btn as-launch', type: 'button', onclick: () => chat.toggle() }, ico('chat'), ' Помічник');
+    content.classList.add('has-chat'); content.append(chat.el); root.append(launch);
+    let waitTimer = 0;
+    function syncChat() {
+      clearTimeout(waitTimer);
+      if (backend.down) return chat.setStatus('down');
+      if (!state.pub?.loaded || backend.index < 0) {
+        chat.setStatus('wait');
+        waitTimer = setTimeout(() => { if (!state.pub?.loaded) chat.setStatus('down'); }, 10000);      // сервер так і не відповів
+        return;
       }
+      chat.setStatus(state.pub.assistant ? 'ok' : 'off');
     }
     const offs = [onState(syncChat), onBackend(syncChat)];
     syncChat();
-    return () => { gone = true; offs.forEach((off) => off()); launch?.remove(); chat?.el.remove(); };
+    return () => { clearTimeout(waitTimer); offs.forEach((off) => off()); launch.remove(); chat.el.remove(); };
   },
 };

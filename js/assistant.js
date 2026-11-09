@@ -87,9 +87,12 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
   const clear = h('button', { class: 'as-clear', type: 'button', title: 'Очистити розмову' }, 'Очистити');
   const close = h('button', { class: 'as-close', type: 'button', 'aria-label': 'Закрити' }, ico('x'));
   const modelLine = h('div', { class: 'as-model' });
+  const status = h('div', { class: 'as-status', role: 'status', hidden: true });
+  let available = false;
   const root = h('aside', { class: 'help-chat', 'aria-label': 'Помічник' },
     h('div', { class: 'as-head' }, h('div', {}, h('b', { class: 'as-title' }, ico('robot'), ' Помічник'), h('small', {}, 'Відповіді створює ШІ, він може помилятися')), clear, close),
     list,
+    status,
     h('div', { class: 'as-foot' }, input, send),
     modelLine);
 
@@ -124,9 +127,19 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
     scroll(); showModel();
   }
 
+  // стан підключення: вікно є завжди, а ввімкнене воно лише коли сервер відповів і помічник працює
+  function setStatus(kind) {
+    const msg = { wait: 'Підключення до сервера…', down: 'Немає зв’язку з сервером. Помічник запрацює, щойно сервер відповість.', off: 'Помічник зараз вимкнено.' }[kind];
+    available = kind === 'ok';
+    status.hidden = available; status.textContent = msg || '';
+    status.dataset.kind = kind;
+    input.disabled = !available; send.disabled = !available || busy;
+    input.placeholder = available ? 'Спитайте про сайт або стего…' : 'Помічник поки недоступний…';
+  }
+
   async function ask(text) {
     text = String(text || '').trim().slice(0, MAX_LEN);
-    if (!text || busy) return;
+    if (!text || busy || !available) return;
     busy = true; send.disabled = true; input.value = ''; fit();
     history.push({ role: 'user', content: text });
     if (history.length === 1) list.replaceChildren();
@@ -144,7 +157,7 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
       wait.replaceWith(h('div', { class: 'as-msg err' }, e.offline ? 'Немає зв’язку з сервером.' : (e.message || 'Не вдалося отримати відповідь.')));
       input.value = text; fit();
     }
-    busy = false; send.disabled = false; save(); scroll(); if (matchMedia('(hover: hover)').matches) input.focus();
+    busy = false; send.disabled = !available; save(); scroll(); if (matchMedia('(hover: hover)').matches) input.focus();
   }
 
   function fit() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; }
@@ -153,6 +166,6 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
   send.addEventListener('click', () => ask(input.value));
   clear.addEventListener('click', () => { history.length = 0; paint(); });
   close.addEventListener('click', () => root.classList.remove('open'));
-  paint();
-  return { el: root, open: () => { root.classList.add('open'); input.focus(); }, toggle: () => root.classList.toggle('open') };
+  paint(); setStatus('wait');
+  return { el: root, setStatus, open: () => { root.classList.add('open'); input.focus(); }, toggle: () => root.classList.toggle('open') };
 }
