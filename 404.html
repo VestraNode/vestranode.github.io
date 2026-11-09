@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 — Сторінку не знайдено · VestraNode</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Такої сторінки на VestraNode немає. Поверніться на головну або відкрийте Стего чи Стегоаналіз.">
+  <meta name="theme-color" content="#0b0c10">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <style>
+    :root { color-scheme: dark; --bg: #0b0c10; --text: #eef0f4; --muted: #9aa3b2; --accent: #7c9cff; --pink: #ff6b9d; --line: #2b303c; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; overflow-x: hidden; position: relative; }
+    .glow { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(55vw 38vw at 8% 105%, rgba(176, 62, 104, .55), transparent 70%),
+        radial-gradient(60vw 42vw at 100% 95%, rgba(34, 168, 190, .45), transparent 70%),
+        radial-gradient(48vw 30vw at 50% 118%, rgba(110, 84, 200, .55), transparent 70%); }
+    .grain { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .5; mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='2.4' intercept='-.7'/><feFuncG type='linear' slope='2.4' intercept='-.7'/><feFuncB type='linear' slope='2.4' intercept='-.7'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+    header, main, footer { position: relative; z-index: 2; }
+    header { display: flex; align-items: center; padding: 1.1rem clamp(1rem, 4vw, 2.4rem); }
+    .brand { display: inline-flex; align-items: center; gap: .7rem; color: var(--text); text-decoration: none; font-weight: 800; letter-spacing: .06em; font-size: 1.25rem; }
+    .brand img { width: 2.4rem; height: 2.4rem; display: block; }
+    main { flex: 1; display: grid; place-items: center; text-align: center; padding: 1rem clamp(1rem, 4vw, 2rem) 3rem; }
+    .code { font-size: clamp(6rem, 24vw, 15rem); line-height: 1; font-weight: 900; letter-spacing: -.04em; margin: 0;
+      background: linear-gradient(100deg, #ff6b9d 0%, #a58bff 45%, #28bed4 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    h1 { font-size: clamp(1.5rem, 4vw, 2.3rem); margin: .2rem 0 .6rem; }
+    p { color: var(--muted); max-width: 34rem; margin: 0 auto; }
+    .hint { margin-top: .4rem; font-size: .95rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .8rem; justify-content: center; margin-top: 1.8rem; }
+    .btn { display: inline-flex; align-items: center; padding: .85rem 1.6rem; border-radius: 999px; text-decoration: none; font-weight: 700; border: 2px solid rgba(255, 255, 255, .35); color: var(--text); background: rgba(255, 255, 255, .06); transition: background .15s, border-color .15s, transform .15s; }
+    .btn:hover { background: rgba(255, 255, 255, .14); border-color: #fff; transform: translateY(-1px); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #0b0c10; box-shadow: 0 0 2.4rem rgba(124, 156, 255, .35); }
+    .btn.primary:hover { filter: brightness(1.1); background: var(--accent); }
+    .chunks { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; width: min(22rem, 78vw); margin: 2.2rem auto 0; opacity: .9; }
+    .chunks i { aspect-ratio: 1; border-radius: 3px; background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .08); }
+    .chunks i.on { background: rgba(124, 156, 255, .5); border-color: rgba(255, 255, 255, .55); animation: blink 3s ease-in-out infinite; }
+    .chunks i.on:nth-child(3n) { animation-delay: .6s; } .chunks i.on:nth-child(3n+1) { animation-delay: 1.4s; }
+    @keyframes blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+    footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 1.2rem; }
+    footer a { color: var(--muted); }
+    @media (prefers-reduced-motion: reduce) { .chunks i.on { animation: none; } .btn { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="glow"></div><div class="grain"></div>
+  <header><a class="brand" href="/"><img src="/img/logo-1024.png" alt="" width="38" height="38"> VESTRANODE</a></header>
+  <main>
+    <div>
+      <div class="code" aria-hidden="true">404</div>
+      <h1>Сторінку не знайдено</h1>
+      <p>Схоже, її приховано так добре, що ми й самі не знайшли. Перевірте адресу або поверніться до улюблених розділів.</p>
+      <p class="hint">Це як зашифрований файл без ключа: адреса є, а змісту немає.</p>
+      <div class="actions">
+        <a class="btn primary" href="/">На головну</a>
+        <a class="btn" href="/#/stego">Стего</a>
+        <a class="btn" href="/#/analysis">Стегоаналіз</a>
+        <a class="btn" href="/#/help">Довідка</a>
+      </div>
+      <div class="chunks" id="chunks" aria-hidden="true"></div>
+    </div>
+  </main>
+  <footer>© Raimex Team · <a href="/">vn.raimex.space</a></footer>
+  <script>
+    (function () {
+      var box = document.getElementById("chunks"), on = [8, 13, 19, 22, 31, 34, 40, 47, 52, 58, 61, 66, 73, 79, 83, 90, 95];
+      for (var i = 0; i < 14 * 6; i++) { var c = document.createElement("i"); if (on.indexOf(i) >= 0) c.className = "on"; box.appendChild(c); }
+    })();
+  </script>
+</body>
+</html>
