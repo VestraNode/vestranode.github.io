@@ -37,6 +37,34 @@ function renderAnswer(text) {
   return nodes;
 }
 
+const modelName = (id) => String(id || '').replace(/:free$/, '');
+
+/** Плавна поява тексту: слова одне за одним проявляються (opacity), усе тривало не довше ~3 с. */
+function reveal(box, done) {
+  const words = [];
+  const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+  const texts = [];
+  while (walker.nextNode()) texts.push(walker.currentNode);
+  for (const node of texts) {
+    const frag = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part)) { frag.append(part); continue; }
+      const span = h('span', { class: 'as-w' }, part);
+      words.push(span); frag.append(span);
+    }
+    node.replaceWith(frag);
+  }
+  if (!words.length || matchMedia('(prefers-reduced-motion: reduce)').matches) { words.forEach((w) => w.classList.add('on')); done?.(); return; }
+  const step = Math.max(12, Math.min(40, 2800 / words.length));
+  let i = 0;
+  const timer = setInterval(() => {
+    for (let k = 0; k < (step < 16 ? 2 : 1) && i < words.length; k++) words[i++].classList.add('on');
+    done?.(true);
+    if (i >= words.length) { clearInterval(timer); done?.(); }
+  }, step);
+}
+
 export function createAssistant() {
   let history = [];
   try { history = JSON.parse(sessionStorage.getItem(STORE) || '[]').filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string'); } catch { history = []; }
@@ -47,14 +75,20 @@ export function createAssistant() {
   const send = h('button', { class: 'btn as-send', type: 'button', 'aria-label': 'Надіслати' }, '➤');
   const clear = h('button', { class: 'as-clear', type: 'button', title: 'Очистити розмову' }, 'Очистити');
   const close = h('button', { class: 'as-close', type: 'button', 'aria-label': 'Закрити' }, '✕');
+  const modelLine = h('div', { class: 'as-model' });
   const root = h('aside', { class: 'help-chat', 'aria-label': 'Помічник' },
     h('div', { class: 'as-head' }, h('div', {}, h('b', {}, '🤖 Помічник'), h('small', {}, 'Відповіді створює ШІ, він може помилятися')), clear, close),
     list,
-    h('div', { class: 'as-foot' }, input, send));
+    h('div', { class: 'as-foot' }, input, send),
+    modelLine);
 
   const save = () => { try { sessionStorage.setItem(STORE, JSON.stringify(history.slice(-20))); } catch { /* ігноруємо */ } };
   const scroll = () => { list.scrollTop = list.scrollHeight; };
   const bubble = (role, content) => h('div', { class: `as-msg ${role}` }, ...(role === 'assistant' ? renderAnswer(content) : [content]));
+  const showModel = () => {
+    const last = [...history].reverse().find((m) => m.role === 'assistant' && m.model);
+    modelLine.textContent = last ? `Модель: ${modelName(last.model)}` : 'Модель підбирається автоматично (безкоштовні моделі OpenRouter)';
+  };
 
   function paint() {
     list.replaceChildren();
@@ -62,7 +96,7 @@ export function createAssistant() {
       list.append(h('div', { class: 'as-hello' }, h('p', {}, 'Привіт! Я відповідаю на питання про VestraNode: версії стего, редактор нод, пакселі, експорт у Python, стегоаналіз.'),
         h('div', { class: 'as-chips' }, SUGGEST.map((q) => h('button', { class: 'as-chip', type: 'button', onclick: () => ask(q) }, q)))));
     } else history.forEach((m) => list.append(bubble(m.role, m.content)));
-    scroll();
+    scroll(); showModel();
   }
 
   async function ask(text) {
@@ -75,15 +109,17 @@ export function createAssistant() {
     const wait = h('div', { class: 'as-msg assistant as-wait' }, h('span', {}), h('span', {}), h('span', {}));
     list.append(wait); scroll();
     try {
-      const r = await api('/api/assistant', { method: 'POST', json: { messages: history.slice(-7) }, silent: true });
-      history.push({ role: 'assistant', content: r.answer });
-      wait.replaceWith(bubble('assistant', r.answer));
+      const r = await api('/api/assistant', { method: 'POST', json: { messages: history.slice(-7).map(({ role, content }) => ({ role, content })) }, silent: true });
+      history.push({ role: 'assistant', content: r.answer, model: r.model });
+      const msg = bubble('assistant', r.answer);
+      wait.replaceWith(msg); showModel();
+      reveal(msg, () => scroll());
     } catch (e) {
       history.pop();                                       // питання не зараховуємо — його можна надіслати знову
       wait.replaceWith(h('div', { class: 'as-msg err' }, e.offline ? 'Немає зв’язку з сервером.' : (e.message || 'Не вдалося отримати відповідь.')));
       input.value = text; fit();
     }
-    busy = false; send.disabled = false; save(); scroll(); input.focus();
+    busy = false; send.disabled = false; save(); scroll(); if (matchMedia('(hover: hover)').matches) input.focus();
   }
 
   function fit() { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 140) + 'px'; }

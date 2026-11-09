@@ -325,3 +325,7 @@ body[data-page="home"] .burger-menu { background: var(--card); }
   .help-chat.open { display: flex; }
   .as-launch { display: inline-flex; position: fixed; right: 1rem; bottom: 1rem; z-index: 60; box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4); }
 }
+.as-model { padding: 0.375rem 0.75rem 0.5rem; font-size: 0.7188rem; color: var(--muted); text-align: center; overflow-wrap: anywhere; }
+.as-w { opacity: 0; transition: opacity 0.45s ease; }
+.as-w.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .as-w { transition: none; opacity: 1; } }
