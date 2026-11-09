@@ -9,6 +9,10 @@ const KIND_LABEL = { own: 'власний', export: 'експорт', bought: '�
 const PAY = { created: 'очікує', success: 'оплачено', failure: 'відхилено', expired: 'прострочено' };
 const PROMO_STATE = { active: ['активний', ''], disabled: ['вимкнено', 'dim'], expired: ['прострочено', 'bad'], exhausted: ['вичерпано', 'gold'] };
 const el = (tag, cls, ...kids) => h(tag, { class: cls }, ...kids);
+const payKind = (p) => (p.kind === 'paxels' || p.kind === 'tg_paxels' ? `${p.paxels} пакс.` : '.py');
+const paySum = (p) => (p.kind === 'tg_paxels' ? `${p.stars} ★` : `${p.amount_uah} ₴`);
+const promoCell = (p) => (p.promo_code ? h('td', {}, h('code', {}, p.promo_code), h('div', { class: 'fine-note' }, p.promo_used ? `✅ активовано ${fmtDate(p.promo_used_at)}` : '⏳ ще не активовано')) : h('td', {}, '—'));
+const activatorCell = (p) => (p.activated_by ? h('td', {}, p.activated_by.email || p.activated_by.name || `#${p.activated_by.id}`) : h('td', {}, p.promo_code ? 'нікто' : '—'));
 
 function table(head, rows, empty = 'Порожньо.') {
   if (!rows.length) return h('p', { class: 'fine-note' }, empty);
@@ -102,7 +106,7 @@ export default {
           h('div', { class: 'card' }, h('h4', {}, 'Нотатка'), note, h('button', { class: 'btn small', onclick: () => act({ note: note.value }, 'Нотатку збережено.') }, 'Зберегти'))),
         h('h4', {}, `Проєкти (${d.projects.length})`), table(['id', 'Назва', 'Нод', 'Змінено', ''], d.projects.map(project), 'Проєктів немає.'),
         h('h4', {}, `Архів операцій (${d.ops.length})`), opsTable(d.ops, () => { box._close(null); }),
-        h('h4', {}, 'Платежі'), table(['Дата', 'Тип', 'Сума', 'Статус'], d.payments.map((p) => h('tr', {}, h('td', {}, fmtDate(p.created_at)), h('td', {}, p.kind === 'paxels' ? `${p.paxels} пакс.` : '.py'), h('td', {}, `${p.amount_uah} ₴`), h('td', {}, PAY[p.status] || p.status))), 'Платежів немає.'),
+        h('h4', {}, 'Платежі'), table(['Дата', 'Тип', 'Сума', 'Статус', 'Промокод'], d.payments.map((p) => h('tr', {}, h('td', {}, fmtDate(p.created_at)), h('td', {}, payKind(p)), h('td', {}, paySum(p)), h('td', {}, PAY[p.status] || p.status), promoCell(p))), 'Платежів немає.'),
         h('h4', {}, 'Рух пакселів'), table(['Дата', 'Зміна', 'Причина', 'Баланс'], d.ledger.map((l) => h('tr', {}, h('td', {}, fmtDate(l.ts)), h('td', { class: l.delta > 0 ? 'delta-plus' : 'delta-minus' }, (l.delta > 0 ? '+' : '') + l.delta), h('td', {}, l.reason), h('td', {}, l.balance_after)))),
         h('h4', {}, 'Остання активність'), table(['Дата', 'Подія', 'Деталі', 'IP'], d.activity.map((a) => h('tr', {}, h('td', {}, fmtDate(a.ts)), h('td', {}, a.kind), h('td', {}, a.detail), h('td', {}, a.ip || '')))));
       let box;
@@ -172,8 +176,9 @@ export default {
 
     async function payments() {
       const d = await api('/api/admin/payments?limit=100');
-      return h('div', { class: 'card' }, table(['Дата', 'Користувач', 'Тип', 'Сума', 'Статус', 'Оплачено'], d.items.map((p) => h('tr', {}, h('td', {}, fmtDate(p.created_at)),
-        h('td', {}, p.email || `#${p.user_id}`), h('td', {}, p.kind === 'paxels' ? `${p.paxels} пакс.` : '.py'), h('td', {}, `${p.amount_uah} ₴`), h('td', {}, PAY[p.status] || p.status), h('td', {}, p.paid_at ? fmtDate(p.paid_at) : '—'))), 'Платежів ще не було.'));
+      return h('div', { class: 'card' }, table(['Дата', 'Покупець', 'Тип', 'Сума', 'Статус', 'Оплачено', 'Промокод і його статус', 'Хто активував'], d.items.map((p) => h('tr', {}, h('td', {}, fmtDate(p.created_at)),
+        h('td', {}, p.kind === 'tg_paxels' ? (p.buyer || 'Telegram') : (p.email || `#${p.user_id}`)), h('td', {}, payKind(p)), h('td', {}, paySum(p)), h('td', {}, PAY[p.status] || p.status),
+        h('td', {}, p.paid_at ? fmtDate(p.paid_at) : '—'), promoCell(p), activatorCell(p))), 'Платежів ще не було.'));
     }
 
 
