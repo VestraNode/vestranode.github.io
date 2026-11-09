@@ -14,7 +14,8 @@ function inline(text, link) {
   let last = 0, m;
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(m[1] !== undefined ? h('b', {}, m[1]) : m[2] !== undefined ? h('code', {}, m[2]) : link(m[3], m[4]));
+    // усередині **жирного** теж можуть бути посилання (**[ChunkyV2QIM](#/help/chunky2)**), тому розбираємо його рекурсивно
+    out.push(m[1] !== undefined ? h('b', {}, ...inline(m[1], link)) : m[2] !== undefined ? h('code', {}, m[2]) : link(m[3].replace(/\*\*/g, ''), m[4]));
     last = re.lastIndex;
   }
   if (last < text.length) out.push(text.slice(last));
