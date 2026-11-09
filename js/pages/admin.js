@@ -1,7 +1,7 @@
 // admin.js — адмін-панель: огляд, користувачі (пакселі, преміум, блокування…), активність, архів операцій (30 днів), платежі, помилки
 import { h, api, state, toast, modal, confirmDialog, promptDialog, fmtInt, fmtDate, fmtBytes, authUrl, assetUrl, debounce } from '../core.js';
 import { triggerDownload } from '../parts.js';
-import { searchField } from '../icons.js';
+import { searchField, ico } from '../icons.js';
 
 const KIND = { encode: 'Кодування', decode: 'Декодування' };
 const ORIGIN = { stego: 'Стего', project: 'Проєкт' };
@@ -11,7 +11,7 @@ const PROMO_STATE = { active: ['активний', ''], disabled: ['вимкне
 const el = (tag, cls, ...kids) => h(tag, { class: cls }, ...kids);
 const payKind = (p) => (p.kind === 'paxels' || p.kind === 'tg_paxels' ? `${p.paxels} пакс.` : '.py');
 const paySum = (p) => (p.kind === 'tg_paxels' ? `${p.stars} ★` : `${p.amount_uah} ₴`);
-const promoCell = (p) => (p.promo_code ? h('td', {}, h('code', {}, p.promo_code), h('div', { class: 'fine-note' }, p.promo_used ? `✅ активовано ${fmtDate(p.promo_used_at)}` : '⏳ ще не активовано')) : h('td', {}, '—'));
+const promoCell = (p) => (p.promo_code ? h('td', {}, h('code', {}, p.promo_code), h('div', { class: 'fine-note' }, p.promo_used ? [ico('checkc'), ` активовано ${fmtDate(p.promo_used_at)}`] : [ico('hourglass'), ' ще не активовано'])) : h('td', {}, '—'));
 const activatorCell = (p) => (p.activated_by ? h('td', {}, p.activated_by.email || p.activated_by.name || `#${p.activated_by.id}`) : h('td', {}, p.promo_code ? 'нікто' : '—'));
 
 function table(head, rows, empty = 'Порожньо.') {

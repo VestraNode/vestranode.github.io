@@ -1,6 +1,6 @@
 // help.js — «Довідка»: ліворуч категорії й версії стего, праворуч — пояснення принципу роботи. Працює без бекенда.
 import { h, noCursor, state, backend, onState, onBackend } from '../core.js';
-import { searchField } from '../icons.js';
+import { searchField, ico } from '../icons.js';
 
 const B = (...a) => h('b', {}, ...a);
 const P = (...a) => h('p', {}, ...a);
@@ -188,7 +188,7 @@ export default {
         const { createAssistant } = await import('../assistant.js');
         if (gone || chat) return;
         chat = createAssistant({ helpIds: new Set(flat.map((i) => i.id)), openHelp: (id) => open(id) });
-        launch = h('button', { class: 'btn as-launch', type: 'button', onclick: () => chat.toggle() }, '💬 Помічник');
+        launch = h('button', { class: 'btn as-launch', type: 'button', onclick: () => chat.toggle() }, ico('chat'), ' Помічник');
         content.classList.add('has-chat'); content.append(chat.el); root.append(launch);
       } else if (!on && chat) {
         chat.el.remove(); launch.remove(); content.classList.remove('has-chat'); chat = launch = null;

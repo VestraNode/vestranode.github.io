@@ -1,5 +1,6 @@
 // assistant.js — чат-помічник у довідці: питання про сайт і стего. Відповіді дає бекенд (/api/assistant), ключ моделі лишається на сервері.
 import { h, api } from './core.js';
+import { ico, hasIcon } from './icons.js';
 
 const STORE = 'vn_assistant_chat';
 const MAX_LEN = 600;
@@ -19,7 +20,11 @@ function inline(text, link) {
 }
 
 /** Мінімальний безпечний рендер відповіді: **жирний**, `код`, списки; усе інше — звичайний текст. */
+// на сайті свої іконки, тож чужих емодзі у відповідях моделі не показуємо (їх просто прибираємо)
+const NATIVE_EMOJI = /[\p{Extended_Pictographic}‍️]/gu;
+
 function renderAnswer(text, link) {
+  text = String(text).replace(NATIVE_EMOJI, (ch) => (hasIcon(ch) ? ch : '')).replace(/[ \t]+\n/g, '\n');
   const nodes = [];
   let list = null;
   for (const raw of String(text).split('\n')) {
@@ -76,12 +81,12 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
 
   const list = h('div', { class: 'as-list', role: 'log', 'aria-live': 'polite' });
   const input = h('textarea', { class: 'input as-input', rows: 1, maxlength: MAX_LEN, placeholder: 'Спитайте про сайт або стего…', 'aria-label': 'Питання помічнику' });
-  const send = h('button', { class: 'btn as-send', type: 'button', 'aria-label': 'Надіслати' }, '➤');
+  const send = h('button', { class: 'btn as-send', type: 'button', 'aria-label': 'Надіслати' }, ico('plane'));
   const clear = h('button', { class: 'as-clear', type: 'button', title: 'Очистити розмову' }, 'Очистити');
-  const close = h('button', { class: 'as-close', type: 'button', 'aria-label': 'Закрити' }, '✕');
+  const close = h('button', { class: 'as-close', type: 'button', 'aria-label': 'Закрити' }, ico('x'));
   const modelLine = h('div', { class: 'as-model' });
   const root = h('aside', { class: 'help-chat', 'aria-label': 'Помічник' },
-    h('div', { class: 'as-head' }, h('div', {}, h('b', {}, '🤖 Помічник'), h('small', {}, 'Відповіді створює ШІ, він може помилятися')), clear, close),
+    h('div', { class: 'as-head' }, h('div', {}, h('b', { class: 'as-title' }, ico('robot'), ' Помічник'), h('small', {}, 'Відповіді створює ШІ, він може помилятися')), clear, close),
     list,
     h('div', { class: 'as-foot' }, input, send),
     modelLine);

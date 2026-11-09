@@ -61,6 +61,8 @@ const P = {   // внутрішність <svg>; за замовчуванням
   chevd: '<path d="M6.5 9.5 12 15l5.5-5.5"/>',
   chevr: '<path d="M9.5 6.5 15 12l-5.5 5.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  robot: '<rect x="4.5" y="8" width="15" height="11" rx="3.4"/><path d="M12 8V4.8M9.4 4.8h5.2M2.8 12.5v2.4M21.2 12.5v2.4"/><circle cx="9.2" cy="13.2" r="1.1" class="f"/><circle cx="14.8" cy="13.2" r="1.1" class="f"/><path d="M10 16.4h4"/>',
+  hourglass: '<path d="M7 3.8h10M7 20.2h10M8 3.8c0 4 3.4 5.2 4 8.2.6-3 4-4.2 4-8.2M8 20.2c0-4 3.4-5.2 4-8.2.6 3 4 4.2 4 8.2"/>',
   copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2.4"/><path d="M15.5 8.5V6.4a1.9 1.9 0 0 0-1.9-1.9H6.4a1.9 1.9 0 0 0-1.9 1.9v7.2a1.9 1.9 0 0 0 1.9 1.9h2.1"/>',
 };
 
@@ -73,8 +75,11 @@ const GLYPH = {
   '◎': G('target'), '↩': G('undo'), '↶': G('undo'), '↷': G('redo'), '⛔': G('ban'), '👤': G('user'), '👥': G('users'), '📁': G('folder'), '🗂': G('archive'),
   '🌙': G('moon'), '☀': G('sun'), '🛡': G('shield'), '🧩': G('nodes'), '🖼': G('image'), '🔗': G('link'), '⌫': G('backspace'), '▮': G('terminal'),
   '⚙': G('gear'), '💬': G('chat'), '⎋': G('logout'), '❓': G('help'), '✈': G('plane'), '🛠': G('wrench'), '🧾': G('receipt'), '🎟': G('ticket'), '💳': G('card'), '🚀': G('rocket'),
-  '🧬': G('dna'), '🟢': G('dot', 'ic-fill ic-green'), '🟣': G('dot', 'ic-fill ic-purple'), '👁': G('eye'), '⏻': G('power'), '▣': G('select'), '▾': G('chevd', 'ic-chev'), '▸': G('chevr', 'ic-chev'),
+  '🧬': G('dna'), '🤖': G('robot'), '⏳': G('hourglass'), '➤': G('plane'), '🟢': G('dot', 'ic-fill ic-green'), '🟣': G('dot', 'ic-fill ic-purple'), '👁': G('eye'), '⏻': G('power'), '▣': G('select'), '▾': G('chevd', 'ic-chev'), '▸': G('chevr', 'ic-chev'),
 };
+
+/** Чи є для символу власна іконка (тоді він автоматично замінюється на SVG). */
+export const hasIcon = (ch) => Object.prototype.hasOwnProperty.call(GLYPH, ch);
 
 const NS = 'http://www.w3.org/2000/svg';
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
