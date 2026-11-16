@@ -4,6 +4,7 @@ import { ico, hasIcon } from './icons.js';
 
 // розмова живе в пам'яті сторінки: переходи по сайту її зберігають, а перезавантаження (F5, нова вкладка) починає чат заново
 let sharedHistory = [];
+const SESSION = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/[^A-Za-z0-9_-]/g, '');      // id розмови: новий після кожного перезавантаження сторінки
 try { sessionStorage.removeItem('vn_assistant_chat'); } catch { /* ігноруємо */ }
 const MAX_LEN = 600;
 const SUGGEST = ['Як сховати текст у фото?', 'Яку версію стего обрати?', 'Що таке пакселі й як їх купити?', 'Як надіслати фото через Telegram, щоб дані не зникли?'];
@@ -147,7 +148,7 @@ export function createAssistant({ helpIds = new Set(), openHelp = null } = {}) {
     const wait = h('div', { class: 'as-msg assistant as-wait' }, h('span', {}), h('span', {}), h('span', {}));
     list.append(wait); scroll();
     try {
-      const r = await api('/api/assistant', { method: 'POST', json: { messages: history.slice(-7).map(({ role, content }) => ({ role, content })) }, silent: true });
+      const r = await api('/api/assistant', { method: 'POST', json: { session: SESSION, messages: history.slice(-7).map(({ role, content }) => ({ role, content })) }, silent: true });
       history.push({ role: 'assistant', content: r.answer, model: r.model });
       const msg = bubble('assistant', r.answer);
       wait.replaceWith(msg); showModel();

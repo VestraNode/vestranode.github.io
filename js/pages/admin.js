@@ -116,8 +116,8 @@ export default {
 
     // ------------------------------------------------------------- архів
     function opsTable(items, onOpen) {
-      return table(['Дата', 'Тип', 'Звідки', 'Версія', 'Текст', 'Файли', 'Діє до', ''], items.map((o) => h('tr', { class: 'clickable', onclick: () => { onOpen && onOpen(); openOp(o.id); } },
-        h('td', {}, fmtDate(o.created_at)), h('td', {}, h('span', { class: `tag ${o.kind === 'decode' ? 'gold' : ''}` }, KIND[o.kind] || o.kind)), h('td', {}, ORIGIN[o.origin] || o.origin), h('td', {}, o.version),
+      return table(['Дата', 'Фото', 'Тип', 'Звідки', 'Версія', 'Текст', 'Файли', 'Діє до', ''], items.map((o) => h('tr', { class: 'clickable', onclick: () => { onOpen && onOpen(); openOp(o.id); } },
+        h('td', {}, fmtDate(o.created_at)), h('td', {}, o.files.some((f) => f.name === 'source.jpg' || f.name === 'input.png') ? h('img', { class: 'op-thumb', loading: 'lazy', src: authUrl(`/api/admin/ops/${o.id}/file/${o.files.some((f) => f.name === 'source.jpg') ? 'source.jpg' : 'input.png'}`), alt: 'фото' }) : '—'), h('td', {}, h('span', { class: `tag ${o.kind === 'decode' ? 'gold' : ''}` }, KIND[o.kind] || o.kind)), h('td', {}, ORIGIN[o.origin] || o.origin), h('td', {}, o.version),
         h('td', { class: 'ellip' }, o.text_preview || '—'), h('td', {}, o.files.length ? `${o.files.length} · ${prettyBytes(o.size_bytes)}` : '—'), h('td', {}, fmtDate(o.expires_at)), h('td', {}, '›'))), 'Записів немає.');
     }
 
@@ -152,7 +152,40 @@ export default {
       };
       q.oninput = debounce(load, 300); uid.oninput = debounce(load, 300);
       await load();
-      return h('div', { class: 'card' }, h('p', { class: 'fine-note' }, 'Тексти й параметри зберігаються 30 днів; фото — лише якщо результат завантажили (кодування) або це декодування.'), h('div', { class: 'row-gap' }, searchField(q), uid, kind), list);
+      const opsBox = h('div', {}, h('p', { class: 'fine-note' }, 'Тексти, параметри й вихідне фото зберігаються 30 днів; готовий результат кодування додається, коли його завантажили.'), h('div', { class: 'row-gap' }, searchField(q), uid, kind), list);
+      const chatBox = h('div', { hidden: true });
+      const seg = h('div', { class: 'seg' });
+      const paintSeg = (v) => seg.replaceChildren(...[['ops', 'Операції (кодування й декодування)'], ['chat', 'Сесії з помічником']].map(([id, l]) => h('button', { class: v === id ? 'on' : '', onclick: async () => {
+        paintSeg(id); opsBox.hidden = id !== 'ops'; chatBox.hidden = id !== 'chat'; if (id === 'chat') chatBox.replaceChildren(await assistantSessions());
+      } }, l)));
+      paintSeg('ops');
+      return h('div', { class: 'card' }, seg, opsBox, chatBox);
+    }
+
+    // ------------------------------------------------------------- сесії з помічником (в архіві)
+    async function assistantSessions() {
+      const q = h('input', { class: 'input', placeholder: 'Пошук у питаннях і відповідях…' });
+      const list = h('div', {});
+      const load = async () => {
+        const d = await api(`/api/admin/assistant?limit=60&q=${encodeURIComponent(q.value)}`);
+        list.replaceChildren(table(['Початок', 'Остання', 'Користувач', 'Повідомлень', 'Перше питання', ''], d.items.map((s) => h('tr', { class: 'clickable', onclick: () => openAssistantSession(s.session_id) },
+          h('td', {}, fmtDate(s.started)), h('td', {}, fmtDate(s.last)), h('td', {}, s.email || `гість (${s.ip || '?'})`), h('td', {}, `${s.messages}${s.failed ? ` · помилок ${s.failed}` : ''}`),
+          h('td', { class: 'ellip' }, s.first_question || '—'), h('td', {}, '›'))), 'Розмов із помічником ще не було.'));
+      };
+      q.oninput = debounce(load, 300);
+      await load();
+      return h('div', {}, h('p', { class: 'fine-note' }, 'Розмови зберігаються 30 днів. Сесія — одна відкрита сторінка довідки: після перезавантаження починається нова.'), h('div', { class: 'row-gap' }, searchField(q)), list);
+    }
+
+    async function openAssistantSession(id) {
+      const d = await api('/api/admin/assistant/' + encodeURIComponent(id));
+      const msgs = d.items.flatMap((m) => [
+        h('div', { class: 'as-msg user', style: { alignSelf: 'flex-end' } }, m.question),
+        h('div', { class: `as-msg ${m.ok ? 'assistant' : 'err'}` }, m.ok ? m.answer : 'Помічник не відповів (усі моделі зайняті).', h('div', { class: 'fine-note' }, `${fmtDate(m.ts)}${m.model ? ' · ' + m.model.replace(/:free$/, '') : ''}`))]);
+      modal({ title: `Помічник · ${d.email || 'гість'}`, content: h('div', { class: 'op-view' },
+        h('div', { class: 'kv-list' }, h('div', {}, h('span', {}, 'Користувач'), h('b', {}, d.email ? `${d.name || ''} (${d.email})` : `гість (${d.ip || '?'})`)), h('div', {}, h('span', {}, 'Повідомлень'), h('b', {}, d.items.length))),
+        h('div', { class: 'as-list', style: { maxHeight: '60vh', display: 'flex', flexDirection: 'column', gap: '8px' } }, msgs),
+        h('div', { class: 'row-gap' }, h('button', { class: 'btn ghost danger', onclick: async () => { if (await confirmDialog('Видалити сесію?', 'Усі повідомлення цієї розмови буде видалено.', 'Видалити', true)) { await api('/api/admin/assistant/' + encodeURIComponent(id), { method: 'DELETE' }); toast('Видалено.', 'ok'); location.reload(); } } }, 'Видалити сесію'))) });
     }
 
     // ------------------------------------------------------------- активність
