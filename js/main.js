@@ -1,7 +1,7 @@
 // main.js — маршрутизатор, верхня панель з меню аватара, перевірка бекендів, повідомлення про зв'язок
 import { $, h, api, state, store, setUser, onState, toast, applyAppearance, setTheme, LOGO_SVG, fmtInt, backend, checkBackends,
   applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor, emitState } from './core.js';
-import { installIcons } from './icons.js';
+import { installIcons, ico } from './icons.js';
 
 applyAppearance();
 
@@ -107,10 +107,22 @@ export async function afterLogin(token) {
   await loadSession();
 }
 
+/** Попередження про технічні роботи: window.VN_CONFIG.maintenance = { text, until, from } у config.js (прибирається саме, коли минає `until`). */
+function maintenanceNotice() {
+  const m = window.VN_CONFIG?.maintenance;
+  if (!m || !m.text) return '';
+  const now = Date.now(), until = m.until ? Date.parse(m.until) : NaN, from = m.from ? Date.parse(m.from) : NaN;
+  if (!Number.isNaN(until) && now > until) return '';
+  if (!Number.isNaN(from) && now < from) return '';
+  return String(m.text);
+}
+
 function renderNotice(r) {
   const box = $('#notice');
   const needsBackend = !PUBLIC.has(r.path) || r.path === '/login';
   const items = [];
+  const mt = maintenanceNotice();
+  if (mt && r.path === '/') items.push(h('div', { class: 'notice warn', role: 'status' }, ico('warn'), h('span', {}, mt)));      // жовте попередження на головній
   if (backend.down && needsBackend) {
     items.push(h('div', { class: 'notice bad' }, h('span', {}, '⛔ Немає зв\'язку з сервером. Ця сторінка тимчасово недоступна, але головна й довідка працюють.'),
       h('button', { class: 'btn small', onclick: async () => { await checkBackends({ immediate: true }); await loadSession(); route(); } }, 'Повторити')));
