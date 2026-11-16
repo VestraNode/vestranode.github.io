@@ -343,15 +343,23 @@ export class Lab {
       // мало чанків (≈10) — на карті це кілька крихітних квадратиків; тому навколо кожного малюємо збільшені «маркери»: світіння, залиту плашку й кільце
       const count = used.length / 3;
       if (count > 0 && count <= 400) {
-        const boost = Math.min(5, Math.max(1, Math.sqrt(400 / count) / 1.6)), pad = scale * boost * 1.5, side = scale + scale * (boost - 1) * 0.9;
-        marks = make(W, H); const m = marks.getContext('2d'); const dk = (v, f) => Math.round(v * f); // квадрати й кільця — набагато темніші за підсвітку
+        const boost = Math.min(5, Math.max(1, Math.sqrt(400 / count) / 1.6));
+        marks = make(W, H); const m = marks.getContext('2d'); const dk = (v, f) => Math.round(v * f);
+        const S = Math.max(scale * 1.6, scale * boost * 1.25), R = S * 0.3;                 // сторона й заокруглення «плашки» маркера
+        const lw = Math.max(1.5, S * 0.07);
+        const rr = (x, y, w, h, r) => { m.beginPath(); if (m.roundRect) m.roundRect(x, y, w, h, r); else m.rect(x, y, w, h); };
         for (let k = 0; k + 2 < used.length; k += 3) {
           const r = used[k], c = used[k + 1]; if (r >= rows || c >= cols) continue;
-          const cx = (c + 0.5) * scale, cy = (r + 0.5) * scale, rad = pad * 2.4;
-          const grad = m.createRadialGradient(cx, cy, 0, cx, cy, rad); grad.addColorStop(0, `rgba(${br},${bg},${bb},.75)`); grad.addColorStop(1, `rgba(${br},${bg},${bb},0)`);
+          const cx = (c + 0.5) * scale, cy = (r + 0.5) * scale, rad = S * 1.35;
+          // м'яке світіння навколо
+          const grad = m.createRadialGradient(cx, cy, S * 0.3, cx, cy, rad); grad.addColorStop(0, `rgba(${br},${bg},${bb},.42)`); grad.addColorStop(1, `rgba(${br},${bg},${bb},0)`);
           m.fillStyle = grad; m.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
-          m.fillStyle = `rgb(${dk(br, .3)},${dk(bg, .3)},${dk(bb, .3)})`; m.fillRect(cx - side / 2, cy - side / 2, side, side);
-          m.strokeStyle = `rgb(${dk(br, .14)},${dk(bg, .14)},${dk(bb, .14)})`; m.lineWidth = Math.max(2, scale * 0.35 * boost); const ring = side + pad * 0.9; m.strokeRect(cx - ring / 2, cy - ring / 2, ring, ring);
+          // темна плашка з тонкою світлою рамкою (набагато темніша за підсвітку, щоб виділялась на карті)
+          rr(cx - S / 2 - lw, cy - S / 2 - lw, S + 2 * lw, S + 2 * lw, R + lw); m.fillStyle = 'rgba(0,0,0,.6)'; m.fill();
+          rr(cx - S / 2, cy - S / 2, S, S, R); m.fillStyle = `rgba(${dk(br, .2)},${dk(bg, .2)},${dk(bb, .2)},.9)`; m.fill();
+          m.lineWidth = lw; m.strokeStyle = `rgba(${br},${bg},${bb},.95)`; m.stroke();
+          // сам чанк у центрі — яскравий акцент
+          const q = S * 0.42; rr(cx - q / 2, cy - q / 2, q, q, q * 0.28); m.fillStyle = `rgb(${br},${bg},${bb})`; m.fill();
         }
       }
     }
