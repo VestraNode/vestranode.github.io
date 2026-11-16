@@ -333,31 +333,19 @@ export class Lab {
       bimg.data[i * 4] = lut[idx * 3]; bimg.data[i * 4 + 1] = lut[idx * 3 + 1]; bimg.data[i * 4 + 2] = lut[idx * 3 + 2]; bimg.data[i * 4 + 3] = 255;
     }
     bctx.putImageData(bimg, 0, 0);
-    let mask = null, glow = null, marks = null;
+    let mask = null, glow = null, marks = null, dim = 0.45;
     if (used) {
       mask = make(cols, rows); const mctx = mask.getContext('2d'), mimg = mctx.createImageData(cols, rows);
       for (let k = 0; k + 2 < used.length; k += 3) { const r = used[k], c = used[k + 1]; if (r >= rows || c >= cols) continue; const o = (r * cols + c) * 4; mimg.data[o] = br; mimg.data[o + 1] = bg; mimg.data[o + 2] = bb; mimg.data[o + 3] = 255; }
       mctx.putImageData(mimg, 0, 0);
       glow = make(W, H); const g = glow.getContext('2d'); g.imageSmoothingEnabled = false;
-      g.filter = `blur(${Math.max(2, scale * 1.2)}px)`; g.drawImage(mask, 0, 0, W, H); g.filter = `blur(${Math.max(6, scale * 4)}px)`; g.drawImage(mask, 0, 0, W, H); g.filter = 'none';
-      // мало чанків (≈10) — на карті це кілька крихітних квадратиків; тому навколо кожного малюємо збільшені «маркери»: світіння, залиту плашку й кільце
-      const count = used.length / 3;
-      if (count > 0 && count <= 400) {
-        // мало чанків: той самий яскравий квадратик, що й при великій кількості, лише збільшений, із bloom-світінням навколо
-        const boost = Math.min(5, Math.max(1, Math.sqrt(400 / count) / 1.6));
-        marks = make(W, H); const m = marks.getContext('2d');
-        const side = Math.max(scale * 1.4, scale * boost * 0.7), bloom = side * 2.6;
-        for (let k = 0; k + 2 < used.length; k += 3) {
-          const r = used[k], c = used[k + 1]; if (r >= rows || c >= cols) continue;
-          const cx = (c + 0.5) * scale, cy = (r + 0.5) * scale;
-          const grad = m.createRadialGradient(cx, cy, 0, cx, cy, bloom);
-          grad.addColorStop(0, `rgba(${br},${bg},${bb},.85)`); grad.addColorStop(0.35, `rgba(${br},${bg},${bb},.32)`); grad.addColorStop(1, `rgba(${br},${bg},${bb},0)`);
-          m.fillStyle = grad; m.fillRect(cx - bloom, cy - bloom, bloom * 2, bloom * 2);
-          m.fillStyle = `rgb(${br},${bg},${bb})`; m.fillRect(cx - side / 2, cy - side / 2, side, side);
-        }
-      }
+      const nUsed = used.length / 3;
+      const few = nUsed > 0 && nUsed <= 400 ? 1 - nUsed / 400 : 0;                      // 0 — багато чанків, 1 — майже немає
+      const bloomK = 1 + few * 1.6;                                                       // чим менше чанків, тим ширше bloom-світіння
+      g.filter = `blur(${Math.max(2, scale * 1.2 * bloomK)}px)`; g.drawImage(mask, 0, 0, W, H); g.filter = `blur(${Math.max(6, scale * 4 * bloomK)}px)`; g.drawImage(mask, 0, 0, W, H); g.filter = 'none';
+      dim = 0.45 + few * 0.47;                                                            // мало чанків — сітку затемнюємо майже до максимуму (до 0,92)
     }
-    return (this.layers = { key, base, mask, glow, marks, W, H, normMax });
+    return (this.layers = { key, base, mask, glow, marks, dim, W, H, normMax });
   }
 
   drawGridFrame(now = performance.now()) {
@@ -369,7 +357,7 @@ export class Lab {
     ctx.drawImage(L.base, 0, 0, L.W, L.H);
     if (this.s.view === 'used' && L.mask) {
       const p = 0.5 - 0.5 * Math.cos(2 * Math.PI * (((now - this.pulseStart) % PULSE_MS) / PULSE_MS));
-      ctx.fillStyle = '#000'; ctx.globalAlpha = 0.45 * p; ctx.fillRect(0, 0, L.W, L.H);
+      ctx.fillStyle = '#000'; ctx.globalAlpha = L.dim * p; ctx.fillRect(0, 0, L.W, L.H);
       ctx.globalAlpha = p; ctx.drawImage(L.mask, 0, 0, L.W, L.H);
       ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = p; ctx.drawImage(L.glow, 0, 0);
       if (L.marks) { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = p; ctx.drawImage(L.marks, 0, 0); }
