@@ -338,3 +338,35 @@ body[data-page="home"] .burger-menu { background: var(--card); }
 .as-input:disabled, .as-send:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .op-thumb { width: 3.4rem; height: 2.4rem; object-fit: cover; border-radius: 0.375rem; border: 1px solid var(--line); display: block; }
+
+/* ---- настільна програма (Windows): вкладки як у Figma */
+html.desktop { --header-h: 2.5rem; }
+html.desktop body { overflow-x: hidden; }
+#topbar.dt-bar { display: flex; align-items: flex-end; gap: 0.5rem; height: var(--header-h); padding: 0 0.5rem 0 0.75rem; background: #08090c; border-bottom: 1px solid var(--line); -webkit-app-region: drag; user-select: none;
+  padding-right: calc(100vw - env(titlebar-area-width, 100vw) + 0.5rem); position: sticky; top: 0; z-index: 90; backdrop-filter: none; }
+.dt-bar a, .dt-bar button { -webkit-app-region: no-drag; }
+.dt-logo { align-self: center; width: 1.4rem; height: 1.4rem; flex: none; margin-right: 0.25rem; }
+.dt-logo svg { width: 100%; height: 100%; display: block; }
+.dt-tabs { display: flex; align-items: flex-end; gap: 0.125rem; min-width: 0; height: 100%; overflow-x: auto; scrollbar-width: none; }
+.dt-tabs::-webkit-scrollbar { display: none; }
+.dt-tab { display: inline-flex; align-items: center; gap: 0.45rem; height: 2.05rem; padding: 0 0.75rem; border-radius: 0.5rem 0.5rem 0 0; color: var(--muted); font-size: 0.8125rem; font-weight: 600; white-space: nowrap; text-decoration: none; max-width: 14rem; border: 1px solid transparent; border-bottom: 0; }
+.dt-tab span { overflow: hidden; text-overflow: ellipsis; }
+.dt-tab .ic { width: 1rem; height: 1rem; flex: none; }
+.dt-tab:hover { background: color-mix(in srgb, var(--text) 7%, transparent); color: var(--text); }
+.dt-tab.on { background: var(--bg); color: var(--text); border-color: var(--line); height: 2.2rem; }
+.dt-tab.proj .dt-x { display: inline-grid; place-items: center; width: 1.1rem; height: 1.1rem; margin-left: 0.15rem; border: 0; border-radius: 0.3rem; background: transparent; color: var(--muted); padding: 0; cursor: pointer; }
+.dt-tab.proj .dt-x .ic { width: 0.7rem; height: 0.7rem; }
+.dt-tab.proj .dt-x:hover { background: color-mix(in srgb, var(--text) 16%, transparent); color: var(--text); }
+.dt-sep { width: 1px; height: 1.1rem; background: var(--line); align-self: center; margin: 0 0.35rem; flex: none; }
+.dt-add { align-self: center; display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border: 0; border-radius: 0.45rem; background: transparent; color: var(--muted); cursor: pointer; margin-left: 0.15rem; }
+.dt-add:hover { background: color-mix(in srgb, var(--text) 12%, transparent); color: var(--text); }
+.dt-spacer { flex: 1; min-width: 1rem; }
+.dt-acc { align-self: center; display: inline-flex; align-items: center; gap: 0.4rem; height: 1.7rem; padding: 0 0.7rem; border-radius: 999px; border: 1px solid var(--line); background: var(--card-2); color: var(--text); font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+.dt-acc:hover { border-color: var(--accent); }
+.dt-acc .ic { width: 0.95rem; height: 0.95rem; }
+.dt-menu { position: fixed; z-index: 200; width: 19rem; padding: 0.4rem; border-radius: 0.8rem; background: var(--card); border: 1px solid var(--line); box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5); display: grid; gap: 0.1rem; }
+.dt-menu-head { display: grid; gap: 0.1rem; padding: 0.6rem 0.7rem 0.7rem; border-bottom: 1px solid var(--line); margin-bottom: 0.25rem; }
+.dt-menu-head small { color: var(--muted); font-size: 0.74rem; }
+.dt-menu-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.7rem; border: 0; border-radius: 0.5rem; background: transparent; color: var(--text); font-size: 0.84rem; text-align: left; cursor: pointer; }
+.dt-menu-item:hover { background: var(--card-2); }
+.dt-menu-item .ic { width: 1rem; height: 1rem; color: var(--muted); }

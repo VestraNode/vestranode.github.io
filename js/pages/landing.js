@@ -1,6 +1,7 @@
 // landing.js — головна сторінка (стиль Parsec): hero, макет редактора, приклади, пакселі, підвал
 import { h, state, fmtInt, noCursor } from '../core.js';
 import { miniGraphSVG, PNG_SKY } from '../graphart.js';
+import { ico } from '../icons.js';
 
 const T = (n, t) => ({ name: n, type: t });
 
@@ -75,6 +76,14 @@ function photoPair() {
     h('div', { class: 'ph' }, h('img', { src: sky, alt: '' }), h('div', { class: 'grid-overlay' }), h('span', {}, 'після')));
 }
 
+/** Посилання на програму для Windows у Microsoft Store (window.VN_CONFIG.storeUrl; поки порожнє — «скоро»). */
+function storeBadge() {
+  const url = window.VN_CONFIG?.storeUrl;
+  const inner = [ico('windows'), h('span', {}, h('small', {}, url ? 'Завантажити з' : 'Програма для Windows'), h('b', {}, url ? 'Microsoft Store' : 'Скоро в Microsoft Store'))];
+  return url ? h('a', { class: 'store-badge', href: url, target: '_blank', rel: 'noopener', 'aria-label': 'Завантажити VestraNode із Microsoft Store' }, ...inner)
+    : h('div', { class: 'store-badge soon', 'aria-label': 'Програма для Windows скоро з’явиться в Microsoft Store' }, ...inner);
+}
+
 export default {
   mount(root) {
     const words = ['приховувачі', 'шифрувальники', 'конвеєри', 'стего-пакети'];
@@ -96,6 +105,7 @@ export default {
           phone ? h('a', { class: 'btn pill cta-main', href: '#/stego' }, 'Відкрити «Стего» →') : h('a', { class: 'btn pill cta-main', href: '#/projects' }, 'Відкрити проєкти →'),
           !phone && h('a', { class: 'btn pill outline', href: '#/stego' }, 'Стего'),
           h('a', { class: 'btn pill outline', href: '#/analysis' }, 'Стегоаналіз')),
+        !phone && storeBadge(),
         !authed && h('div', { class: 'hint' }, 'Новий акаунт отримує ', h('b', {}, '100 пакселів'), ' — вистачить на кілька зображень.'),
       ),
       h('div', { class: 'mock-wrap' }, h('div', { class: 'hero-glow a' }), h('div', { class: 'hero-glow b' }), h('div', { class: 'hero-glow c' }), h('div', { class: 'hero-glow d' }), h('div', { class: 'mock' },

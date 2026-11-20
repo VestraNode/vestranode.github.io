@@ -2,6 +2,7 @@
 import { $, h, api, state, store, setUser, onState, toast, applyAppearance, setTheme, LOGO_SVG, fmtInt, backend, checkBackends,
   applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor, emitState } from './core.js';
 import { installIcons, ico } from './icons.js';
+import { DESKTOP, renderDesktopBar, trackRoute } from './desktop.js';
 
 applyAppearance();
 
@@ -76,7 +77,7 @@ async function loadSession() {
     state.pub = { ...state.pub, ...pub, loaded: true };
     emitState();                                           // довідка вмикає помічника, коли з'ясовується, що він є
   } catch { /* лишаються значення з config.js */ }
-  if (!getToken()) { setUser(null); return; }
+  if (!DESKTOP && !getToken()) { setUser(null); return; }                      // у настільній програмі вхід не потрібен: бекенд локальний, користувач — гість
   try {
     const me = await api('/api/me', { silent: true });
     if (me.user) { setUser(me.user); await refreshResourceToken(); } else { setToken(null); setUser(null); if (me.banned) toast('Ваш акаунт заблоковано.', 'error'); }
@@ -157,6 +158,10 @@ async function route() {
   await Promise.race([inflight, sleep(4000)]);
   if (stale()) return;
   const r = parseHash();
+  if (DESKTOP) {
+    if (['/', '/login', '/auth', '/help', '/profile', '/share', '/admin'].includes(r.path)) { location.hash = '#/projects'; return; }
+    trackRoute(r);
+  }
   const old = current;
   current = null;
   if (old?.unmount) { try { await old.unmount(); } catch { /* ігноруємо */ } }
@@ -210,6 +215,7 @@ const ICON = {
 let menuOpen = false;
 
 function renderTopbar(r) {
+  if (DESKTOP) { renderDesktopBar(r); return; }
   const bar = $('#topbar');
   const links = state.pub?.links || {};
   bar.classList.toggle('transparent', r.path === '/');
