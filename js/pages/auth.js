@@ -1,6 +1,6 @@
 // auth.js — повернення з Google/Discord: бекенд перенаправляє сюди з токеном у фрагменті адреси (#/auth?token=…&n=…)
-import { h, store, toast, homeRoute } from '../core.js';
-import { go, afterLogin } from '../main.js';
+import { h, store, toast } from '../core.js';
+import { go, afterLogin, afterAuthRoute } from '../main.js';
 
 export default {
   async mount(root, r) {
@@ -14,6 +14,6 @@ export default {
     }
     await afterLogin(r.query.token);
     toast('Ви увійшли в акаунт.', 'ok');
-    go(homeRoute());
+    go(afterAuthRoute());
   },
 };

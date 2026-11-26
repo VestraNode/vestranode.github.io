@@ -1,5 +1,6 @@
 // device.js — підтвердження входу настільної програми: #/device?code=XXXX-XXXX (сторінка потребує входу; без нього router веде на вхід/реєстрацію)
 import { h, api, state, toast } from '../core.js';
+import { forgetDevice } from '../main.js';
 
 export default {
   async mount(root, r) {
@@ -10,12 +11,16 @@ export default {
 
     let info;
     try { info = await api(`/api/desktop/link/info?code=${encodeURIComponent(code)}`, { silent: true }); }
-    catch (e) { message('Вхід у програму', e.message); return; }
+    catch (e) {
+      if (e.status === 404) forgetDevice();                  // код застарів або вже використаний
+      message('Вхід у програму', e.message); return;
+    }
 
     const answer = async (allow) => {
       box.querySelectorAll('button').forEach((b) => { b.disabled = true; });
       try {
         await api('/api/desktop/link/approve', { method: 'POST', json: { code: info.code, allow }, silent: true });
+        forgetDevice();
         if (allow) message('Вхід підтверджено', 'Поверніться в застосунок VestraNode. Цю вкладку можна закрити.');
         else message('Вхід скасовано', 'Доступ до акаунта не надано.');
       } catch (e) { toast(e.message, 'error'); box.querySelectorAll('button').forEach((b) => { b.disabled = false; }); }

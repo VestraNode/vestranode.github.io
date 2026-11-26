@@ -1,6 +1,6 @@
 // main.js — маршрутизатор, верхня панель з меню аватара, перевірка бекендів, повідомлення про зв'язок
 import { $, h, api, state, store, setUser, onState, toast, applyAppearance, setTheme, LOGO_SVG, fmtInt, backend, checkBackends,
-  applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor, emitState } from './core.js';
+  applyBetterBackend, startBackendWatch, onBackend, getToken, setToken, refreshResourceToken, assetUrl, noCursor, emitState, homeRoute } from './core.js';
 import { installIcons, ico } from './icons.js';
 import { DESKTOP, renderDesktopBar, trackRoute } from './desktop.js';
 
@@ -63,6 +63,23 @@ export function parseHash() {
 
 export const ready = () => booted;
 export const go = (to) => { if (location.hash.replace(/^#/, '') === to) route(); else location.hash = to; };
+
+// Вхід із настільної програми: поки його не підтверджено, будь-який вхід чи реєстрація (пошта, Google, Discord, меню зверху)
+// мають повернути на сторінку підтвердження. Пам'ятаємо лише в цій вкладці й не довше, ніж діє сам код (10 хвилин).
+const DEVICE_KEY = 'vn:pending-device';
+export function rememberDevice(code) {
+  if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)) return;
+  try { sessionStorage.setItem(DEVICE_KEY, JSON.stringify({ code, until: Date.now() + 10 * 60 * 1000 })); } catch { /* сховище недоступне */ }
+}
+export function forgetDevice() { try { sessionStorage.removeItem(DEVICE_KEY); } catch { /* сховище недоступне */ } }
+function pendingDevice() {
+  try {
+    const p = JSON.parse(sessionStorage.getItem(DEVICE_KEY));
+    return p && p.until > Date.now() ? `/device?code=${p.code}` : '';
+  } catch { return ''; }
+}
+/** Куди перейти після входу чи реєстрації. */
+export const afterAuthRoute = (next) => pendingDevice() || next || homeRoute();
 
 let current = null, booted = null;
 
@@ -160,6 +177,7 @@ async function route() {
   await Promise.race([inflight, sleep(4000)]);
   if (stale()) return;
   const r = parseHash();
+  if (r.path === '/device' && r.query.code) rememberDevice(String(r.query.code).toUpperCase());
   if (DESKTOP) {
     if (['/', '/login', '/auth', '/help', '/profile', '/share', '/admin'].includes(r.path)) { location.hash = '#/projects'; return; }
     trackRoute(r);
