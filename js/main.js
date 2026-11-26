@@ -19,6 +19,7 @@ const ROUTES = {
   '/project': () => import('./pages/project.js'),
   '/admin': () => import('./pages/admin.js'),
   '/share': () => import('./pages/share.js'),
+  '/device': () => import('./pages/device.js'),
 };
 // сторінки, що працюють без бекенда
 const PUBLIC = new Set(['/', '/login', '/auth', '/help', '/settings']);
@@ -43,6 +44,7 @@ const PAGE_META = {
   '/login': ['Вхід і реєстрація', 'Увійдіть у VestraNode через пошту, Google чи Discord.'],
   '/admin': ['Адмін-панель', 'Керування сайтом.'],
   '/share': ['Спільний проєкт', 'Проєкт, яким поділилися за посиланням.'],
+  '/device': ['Вхід у програму', 'Підтвердження входу настільної програми VestraNode.'],
 };
 
 function setPageMeta(path) {

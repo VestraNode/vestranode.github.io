@@ -38,17 +38,28 @@
       <h1>Політика конфіденційності</h1>
       <p class="date">Чинна з 26 листопада 2026 року</p>
       <p>Ця політика стосується сайту <a href="https://vn.raimex.space/">vn.raimex.space</a> та програми VestraNode для Windows. Їх розробляє Raimex Crucible.</p>
-      <div class="box"><b>Коротко.</b> Програма для Windows працює в гостьовому режимі, виконує обчислення на вашому комп'ютері й не надсилає нам ваші фото, тексти, ключі чи проєкти. Сайт обробляє дані на сервері, тому частину з них ми зберігаємо. Реклами й сторонньої аналітики немає, дані ми не продаємо.</div>
+      <div class="box"><b>Коротко.</b> Програма для Windows виконує обчислення на вашому комп'ютері й працює без акаунта. У гостьовому режимі вона нічого нам не надсилає. Якщо ви входите в акаунт, ми отримуємо дані для перевірки пристрою, а проєкт потрапляє на сервер лише тоді, коли ви самі зберігаєте його на сайт. Сайт обробляє дані на сервері, тому частину з них ми зберігаємо. Реклами й сторонньої аналітики немає, дані ми не продаємо.</div>
 
       <h2>1. Програма для Windows</h2>
+      <h3>Робота на вашому пристрої</h3>
       <ul>
-        <li>Обліковий запис не потрібен. Обчислення виконує служба на самому комп'ютері, доступна лише локально (127.0.0.1).</li>
+        <li>Обліковий запис не обов'язковий. Обчислення виконує служба на самому комп'ютері, доступна лише локально (127.0.0.1).</li>
         <li>Проєкти й налаштування інтерфейсу зберігаються на вашому пристрої. Під час обробки програма також створює тимчасові файли у своїй теці даних.</li>
-        <li>У програмі немає телеметрії, реклами та помічника ШІ, і вона не передає нам ваші фото, тексти, ключі чи проєкти.</li>
-        <li>Посилання на сайт відкриваються у вашому браузері; далі діють правила для сайту.</li>
-        <li>Видалення програми може видалити її дані. Важливі проєкти збережіть у файли <code>.vnp</code>.</li>
-        <li>Якщо в програмі з'явиться синхронізація з сервером, ми оновимо цю політику до її запуску.</li>
+        <li>У програмі немає телеметрії, реклами та помічника ШІ. Фото, тексти й ключі, які ви обробляєте, вона нам не передає.</li>
+        <li>У гостьовому режимі програма не звертається до наших серверів. Посилання на сайт відкриваються у вашому браузері; далі діють правила для сайту.</li>
       </ul>
+      <h3>Вхід в акаунт</h3>
+      <p>Вхід і реєстрація відбуваються на сайті: пароль у програму не вводиться. Щоб захистити акаунт, програма передає:</p>
+      <ul>
+        <li>назву комп'ютера та версію Windows;</li>
+        <li>ідентифікатор пристрою у вигляді хешу, обчисленого з ідентифікатора встановлення Windows, назви комп'ютера, моделі процесора та архітектури.</li>
+      </ul>
+      <p>Під час входу та збереження проєкту сервер перевіряє, чи збігається ідентифікатор пристрою. Якщо пристрій змінився, вхід потрібно підтвердити на сайті ще раз. Зміна IP-адреси на вхід не впливає: адреса, як і в будь-якому запиті до сервера, показується на сторінці підтвердження та записується в технічні журнали. Для прив'язки ми зберігаємо назву комп'ютера, хеш ідентифікатора пристрою, хеші ключів входу та дати створення й останнього входу. Прив'язка видаляється, коли ви виходите з акаунта в програмі за наявності зв'язку з сервером. Зміна пароля або вихід на всіх пристроях робить її недійсною, а запис видаляється під час наступного звернення програми. Незавершені запити на вхід (серед іншого з назвою комп'ютера, версією Windows та IP-адресою) діють 10 хвилин і згодом видаляються. Входи, вивантаження та заблоковані спроби записуються в журнал дій акаунта.</p>
+      <p>На вашому комп'ютері зберігаються ім'я та пошта акаунта, ключ входу, зашифрований засобами Windows, і відомості про те, які проєкти ви зберегли на сайт. Вихід з акаунта видаляє ці дані з комп'ютера.</p>
+      <h3>Збереження проєктів на сайт</h3>
+      <p>Коли ви натискаєте «На сайт», програма надсилає назву проєкту, дати його створення та зміни і граф нод з усіма значеннями в їхніх налаштуваннях. Якщо ви ввели в налаштування нод текст чи ключ, вони теж будуть надіслані. Фото й дані робочого режиму не надсилаються. Збережений проєкт стає частиною вашого акаунта на сайті. Повторне збереження оновлює цю копію.</p>
+      <h3>Захист під час передавання та видалення програми</h3>
+      <p>Програма з'єднується з нашими серверами лише через HTTPS. Видалення програми може видалити її локальні дані, тому важливі проєкти збережіть у файли <code>.vnp</code> або на сайт. Видалення програми не видаляє акаунт і проєкти, збережені на сайті.</p>
 
       <h2>2. Які дані обробляє сайт</h2>
       <h3>Обліковий запис</h3>
@@ -85,7 +96,7 @@
       <p>У локальному сховищі браузера зберігаються токен входу, налаштування інтерфейсу та короткі дані профілю. Службовий кеш допомагає відкривати сторінки сайту. Рекламних та аналітичних файлів cookie ми не використовуємо. Ви можете очистити ці дані в налаштуваннях браузера.</p>
 
       <h2>5. Ваші права та видалення</h2>
-      <p>Ви можете попросити надати копію своїх даних, виправити їх або видалити акаунт. Під час видалення акаунта видаляються його проєкти, способи входу, записи про платежі й баланс та архів операцій. Записи в журналах дій і помилок та про видані коди можуть залишитися; розмови з помічником видаляються після 30 днів. Копії в резервних копіях зникають під час їх оновлення.</p>
+      <p>Ви можете попросити надати копію своїх даних, виправити їх або видалити акаунт. Під час видалення акаунта видаляються його проєкти, способи входу, прив'язки програми, записи про платежі й баланс та архів операцій. Записи в журналах дій і помилок та про видані коди можуть залишитися; розмови з помічником видаляються після 30 днів. Копії в резервних копіях зникають під час їх оновлення.</p>
 
       <h2>6. Безпека, діти та зміни</h2>
       <p>З'єднання з сайтом захищене HTTPS, проте жодна система не гарантує абсолютної безпеки. Сайт не призначений для дітей віком до 13 років. Про зміни в політиці ми повідомляємо оновленням цієї сторінки та дати.</p>
@@ -98,17 +109,28 @@
       <h1>Privacy Policy</h1>
       <p class="date">Effective 26 November 2026</p>
       <p>This policy covers the website <a href="https://vn.raimex.space/">vn.raimex.space</a> and the VestraNode app for Windows, developed by Raimex Crucible.</p>
-      <div class="box"><b>In short.</b> The Windows app runs in guest mode, does its processing on your computer and does not send us your photos, texts, keys or projects. The website processes data on a server, so some of it is stored. There are no ads or third-party analytics, and we do not sell data.</div>
+      <div class="box"><b>In short.</b> The Windows app does its processing on your computer and works without an account. In guest mode it sends us nothing. If you sign in, we receive data used to verify your device, and a project reaches our server only when you save it to the website yourself. The website processes data on a server, so some of it is stored. There are no ads or third-party analytics, and we do not sell data.</div>
 
       <h2>1. Windows app</h2>
+      <h3>On your device</h3>
       <ul>
-        <li>No account is required. Processing is done by a service on your computer that is reachable only locally (127.0.0.1).</li>
+        <li>An account is optional. Processing is done by a service on your computer that is reachable only locally (127.0.0.1).</li>
         <li>Projects and interface settings are stored on your device. While processing, the app also creates temporary files in its data folder.</li>
-        <li>The app has no telemetry, ads or AI assistant and does not send us your photos, texts, keys or projects.</li>
-        <li>Links to the website open in your browser, where the website terms below apply.</li>
-        <li>Uninstalling the app may delete its data. Save important projects as <code>.vnp</code> files.</li>
-        <li>If server synchronisation is added to the app, we will update this policy before it is released.</li>
+        <li>The app has no telemetry, ads or AI assistant. It does not send us the photos, texts or keys you process.</li>
+        <li>In guest mode the app does not contact our servers. Links to the website open in your browser, where the website terms below apply.</li>
       </ul>
+      <h3>Signing in</h3>
+      <p>Sign-in and registration take place on the website; no password is entered in the app. To protect your account, the app sends:</p>
+      <ul>
+        <li>the computer name and Windows version;</li>
+        <li>a device identifier in hashed form, computed from the Windows installation ID, computer name, processor model and architecture.</li>
+      </ul>
+      <p>When you sign in and when you save a project, the server checks that the device identifier matches. If the device changes, you need to confirm the sign-in on the website again. A change of IP address does not affect sign-in: as with any request to the server, the address is shown on the confirmation page and recorded in technical logs. For the link between the app and your account we store the computer name, the device identifier hash, hashes of sign-in keys, and the dates of creation and last sign-in. The link is deleted when you sign out in the app while the server is reachable. Changing your password or signing out on all devices invalidates it, and the record is deleted the next time the app contacts the server. Unfinished sign-in requests (including the computer name, Windows version and IP address) are valid for 10 minutes and are deleted afterwards. Sign-ins, uploads and blocked attempts are recorded in the account activity log.</p>
+      <p>Your computer stores the account name and email, a sign-in key encrypted by Windows, and which projects you have saved to the website. Signing out removes this data from the computer.</p>
+      <h3>Saving projects to the website</h3>
+      <p>When you choose to save a project to the website, the app sends its name, creation and change dates, and the node graph with all values in the node settings. Any text or key you entered in node settings is sent too. Photos and work-mode inputs are not sent. The saved project becomes part of your account on the website; saving it again updates that copy.</p>
+      <h3>Transfer security and uninstalling</h3>
+      <p>The app connects to our servers over HTTPS only. Uninstalling the app may delete its local data, so save important projects as <code>.vnp</code> files or to the website. Uninstalling does not delete your account or the projects saved on the website.</p>
 
       <h2>2. Data processed by the website</h2>
       <ul>
@@ -127,7 +149,7 @@
       <p>Local storage keeps your sign-in token, interface settings and brief profile data; a service-worker cache helps pages open. We use no advertising or analytics cookies. You can clear this data in your browser.</p>
 
       <h2>5. Your rights and deletion</h2>
-      <p>You may ask for a copy of your data, its correction or deletion of your account. Deleting an account removes its projects, sign-in methods, payment and balance records and operations archive. Entries in activity and error logs and records of issued codes may remain; assistant conversations are deleted after 30 days. Copies in backups disappear as backups are replaced.</p>
+      <p>You may ask for a copy of your data, its correction or deletion of your account. Deleting an account removes its projects, sign-in methods, app links, payment and balance records and operations archive. Entries in activity and error logs and records of issued codes may remain; assistant conversations are deleted after 30 days. Copies in backups disappear as backups are replaced.</p>
 
       <h2>6. Security, children and changes</h2>
       <p>The website uses HTTPS, but no system can guarantee absolute security. The service is not intended for children under 13. Changes are published on this page with a new date.</p>
