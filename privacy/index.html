@@ -57,7 +57,7 @@
       <ul>
         <li>Завантажені файли обробляються на сервері й тимчасово зберігаються в його пам'яті та тимчасових файлах.</li>
         <li>Архів операцій зберігається 30 днів: прихований або розкодований текст, параметри, журнал виконання, вихідне фото та, за наявності, результат.</li>
-        <li>У простому режимі «Стего» ключ не записується в архів. Журнал виконання проєкту може містити значення полів введення, зокрема ключ.</li>
+        <li>Ключі в архів не записуються: у журналі виконання проєкту значення «Імпорту ключа» та всього, що під'єднано до входів «ключ», приховуються. Записи проєктів, створені до цього виправлення (26 листопада 2026 року, 19:46 UTC), могли містити ключ; вони зникають разом з архівом через 30 днів після створення.</li>
         <li>Проєкти зберігаються, доки ви їх не видалите. У них є все, що ви внесли в налаштування нод.</li>
         <li>Якщо ви ділитеся проєктом за посиланням, отримувачі бачать те, що дозволяють обрані вами права, зокрема ваше ім'я, якщо ви це ввімкнули.</li>
       </ul>
@@ -113,7 +113,7 @@
       <h2>2. Data processed by the website</h2>
       <ul>
         <li><b>Account:</b> email, name, avatar; passwords are stored only as hashes. With Google or Discord sign-in we receive your email, name, avatar and account identifier.</li>
-        <li><b>Photos and texts:</b> files are processed on the server and kept temporarily in memory and temporary files. An operations archive is kept for 30 days: hidden or decoded text, parameters, run log, source photo and, where present, the result. In the simple Stego mode the key is not written to the archive. The run log of a project may contain input values, including a key.</li>
+        <li><b>Photos and texts:</b> files are processed on the server and kept temporarily in memory and temporary files. An operations archive is kept for 30 days: hidden or decoded text, parameters, run log, source photo and, where present, the result. Keys are not written to the archive: in project run logs, values from key inputs and anything connected to a key port are hidden. Project entries created before this fix (26 November 2026, 19:46 UTC) may contain a key; they expire with the archive 30 days after creation.</li>
         <li><b>Projects</b> are kept until you delete them, including anything entered in node settings. Recipients of a share link see what the permissions you chose allow.</li>
         <li><b>Help assistant:</b> questions, answers, IP address and, if signed in, the link to your account are kept for 30 days. Questions and a short chat history are sent to OpenRouter and the provider of the selected model. Free models may retain and use requests under their own terms. Do not send personal data, passwords or keys.</li>
         <li><b>Technical logs:</b> account actions, IP address and browser details, and an error log with IP address and request path, used for security and support. They are not currently deleted automatically.</li>
