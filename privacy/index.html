@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Політика конфіденційності — VestraNode</title>
+  <meta name="description" content="Які дані обробляють сайт VestraNode і програма VestraNode для Windows, де вони зберігаються і як їх видалити.">
+  <link rel="canonical" href="https://vn.raimex.space/privacy/">
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#0b0c10">
+  <style>
+    :root { color-scheme: dark; --bg: #0b0c10; --card: #15171e; --text: #eef0f4; --muted: #9aa3b2; --accent: #7c9cff; --line: #2b303c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    header, main, footer { max-width: 52rem; margin: 0 auto; padding: 0 16px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.2rem; padding-bottom: 1.2rem; flex-wrap: wrap; }
+    .brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--text); text-decoration: none; font-weight: 800; letter-spacing: .06em; }
+    .brand img { width: 2rem; height: 2rem; }
+    nav a { margin-left: .9rem; }
+    a { color: var(--accent); overflow-wrap: anywhere; }
+    h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); margin: 1rem 0 .3rem; line-height: 1.2; }
+    h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+    h3 { font-size: 1.05rem; margin: 1.4rem 0 .4rem; }
+    ul { padding-left: 1.25rem; } li { margin: .3rem 0; }
+    .date, footer { color: var(--muted); font-size: .9rem; }
+    .box { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: .8rem 1.1rem; margin: 1.2rem 0; }
+    section + section { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1rem; }
+    footer { padding-top: 2.5rem; padding-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/"><img src="/img/logo-1024.png" alt="" width="32" height="32">VESTRANODE</a>
+    <nav><a href="#uk">Українською</a><a href="#en">English</a></nav>
+  </header>
+  <main>
+    <section id="uk" lang="uk">
+      <h1>Політика конфіденційності</h1>
+      <p class="date">Чинна з 26 листопада 2026 року</p>
+      <p>Ця політика стосується сайту <a href="https://vn.raimex.space/">vn.raimex.space</a> та програми VestraNode для Windows. Їх розробляє Raimex Team.</p>
+      <div class="box"><b>Коротко.</b> Програма для Windows працює в гостьовому режимі, виконує обчислення на вашому комп'ютері й не надсилає нам ваші фото, тексти, ключі чи проєкти. Сайт обробляє дані на сервері, тому частину з них ми зберігаємо. Реклами й сторонньої аналітики немає, дані ми не продаємо.</div>
+
+      <h2>1. Програма для Windows</h2>
+      <ul>
+        <li>Обліковий запис не потрібен. Обчислення виконує служба на самому комп'ютері, доступна лише локально (127.0.0.1).</li>
+        <li>Проєкти й налаштування інтерфейсу зберігаються на вашому пристрої. Під час обробки програма також створює тимчасові файли у своїй теці даних.</li>
+        <li>У програмі немає телеметрії, реклами та помічника ШІ, і вона не передає нам ваші фото, тексти, ключі чи проєкти.</li>
+        <li>Посилання на сайт відкриваються у вашому браузері; далі діють правила для сайту.</li>
+        <li>Видалення програми може видалити її дані. Важливі проєкти збережіть у файли <code>.vnp</code>.</li>
+        <li>Якщо в програмі з'явиться синхронізація з сервером, ми оновимо цю політику до її запуску.</li>
+      </ul>
+
+      <h2>2. Які дані обробляє сайт</h2>
+      <h3>Обліковий запис</h3>
+      <p>Адреса пошти, ім'я, аватар; пароль зберігається лише у вигляді хешу. Якщо ви входите через Google або Discord, ми отримуємо пошту, ім'я, аватар та ідентифікатор акаунта в цьому сервісі.</p>
+      <h3>Фото, тексти та проєкти</h3>
+      <ul>
+        <li>Завантажені файли обробляються на сервері й тимчасово зберігаються в його пам'яті та тимчасових файлах.</li>
+        <li>Архів операцій зберігається 30 днів: прихований або розкодований текст, параметри, журнал виконання, вихідне фото та, за наявності, результат.</li>
+        <li>У простому режимі «Стего» ключ не записується в архів. Журнал виконання проєкту може містити значення полів введення, зокрема ключ.</li>
+        <li>Проєкти зберігаються, доки ви їх не видалите. У них є все, що ви внесли в налаштування нод.</li>
+        <li>Якщо ви ділитеся проєктом за посиланням, отримувачі бачать те, що дозволяють обрані вами права, зокрема ваше ім'я, якщо ви це ввімкнули.</li>
+      </ul>
+      <h3>Помічник у довідці</h3>
+      <p>Ми зберігаємо ваші питання, відповіді, IP-адресу та, якщо ви увійшли, зв'язок з акаунтом протягом 30 днів. Питання й коротка історія розмови передаються сервісу OpenRouter і постачальнику вибраної моделі, щоб отримати відповідь. Безкоштовні моделі можуть зберігати та використовувати запити за своїми правилами. Не надсилайте помічнику персональні дані, паролі чи ключі.</p>
+      <h3>Технічні журнали</h3>
+      <p>Дії в акаунті, IP-адреса та відомості про браузер, а також журнал помилок з IP-адресою й адресою запиту потрібні для безпеки та підтримки. Зараз ці записи не видаляються автоматично.</p>
+      <h3>Оплата</h3>
+      <p>Під час оплати зірками Telegram ми зберігаємо ідентифікатор та ім'я користувача Telegram, номер платежу, суму в зірках, виданий код або замовлення. Даних банківських карток ми не отримуємо.</p>
+
+      <h2>3. Хто має доступ</h2>
+      <p>Адміністратор сервісу може переглядати дані акаунтів, проєкти, архів операцій, розмови з помічником і журнали для підтримки, захисту від зловживань і виправлення помилок. Для роботи сайту ми користуємося послугами:</p>
+      <ul>
+        <li>MiroHost: сервер у Польщі та його резервні копії;</li>
+        <li>Supabase: база даних;</li>
+        <li>GitHub Pages: розміщення сторінок сайту;</li>
+        <li>Cloudflare і Tailscale: запасні адреси сервера;</li>
+        <li>Google і Discord: вхід в акаунт, якщо ви його обрали;</li>
+        <li>Telegram: оплата;</li>
+        <li>OpenRouter і постачальники моделей: помічник.</li>
+      </ul>
+      <p>Ці сервіси можуть отримувати технічні дані, зокрема IP-адресу, і обробляти їх за власними правилами, також за межами вашої країни. Ми можемо розкрити дані, якщо цього вимагає закон.</p>
+
+      <h2>4. Зберігання в браузері</h2>
+      <p>У локальному сховищі браузера зберігаються токен входу, налаштування інтерфейсу та короткі дані профілю. Службовий кеш допомагає відкривати сторінки сайту. Рекламних та аналітичних файлів cookie ми не використовуємо. Ви можете очистити ці дані в налаштуваннях браузера.</p>
+
+      <h2>5. Ваші права та видалення</h2>
+      <p>Ви можете попросити надати копію своїх даних, виправити їх або видалити акаунт. Під час видалення акаунта видаляються його проєкти, способи входу, записи про платежі й баланс та архів операцій. Записи в журналах дій і помилок та про видані коди можуть залишитися; розмови з помічником видаляються після 30 днів. Копії в резервних копіях зникають під час їх оновлення.</p>
+
+      <h2>6. Безпека, діти та зміни</h2>
+      <p>З'єднання з сайтом захищене HTTPS, проте жодна система не гарантує абсолютної безпеки. Сайт не призначений для дітей віком до 13 років. Про зміни в політиці ми повідомляємо оновленням цієї сторінки та дати.</p>
+
+      <h2>7. Контакт</h2>
+      <p>Напишіть нам через <a href="https://github.com/VestraNode/Chunky/issues" rel="noopener">GitHub Issues проєкту</a>. Ця сторінка звернень публічна, тому не вказуйте в ній паролі, ключі чи інші особисті дані: напишіть лише, що маєте запит щодо конфіденційності.</p>
+    </section>
+
+    <section id="en" lang="en">
+      <h1>Privacy Policy</h1>
+      <p class="date">Effective 26 November 2026</p>
+      <p>This policy covers the website <a href="https://vn.raimex.space/">vn.raimex.space</a> and the VestraNode app for Windows, developed by Raimex Team.</p>
+      <div class="box"><b>In short.</b> The Windows app runs in guest mode, does its processing on your computer and does not send us your photos, texts, keys or projects. The website processes data on a server, so some of it is stored. There are no ads or third-party analytics, and we do not sell data.</div>
+
+      <h2>1. Windows app</h2>
+      <ul>
+        <li>No account is required. Processing is done by a service on your computer that is reachable only locally (127.0.0.1).</li>
+        <li>Projects and interface settings are stored on your device. While processing, the app also creates temporary files in its data folder.</li>
+        <li>The app has no telemetry, ads or AI assistant and does not send us your photos, texts, keys or projects.</li>
+        <li>Links to the website open in your browser, where the website terms below apply.</li>
+        <li>Uninstalling the app may delete its data. Save important projects as <code>.vnp</code> files.</li>
+        <li>If server synchronisation is added to the app, we will update this policy before it is released.</li>
+      </ul>
+
+      <h2>2. Data processed by the website</h2>
+      <ul>
+        <li><b>Account:</b> email, name, avatar; passwords are stored only as hashes. With Google or Discord sign-in we receive your email, name, avatar and account identifier.</li>
+        <li><b>Photos and texts:</b> files are processed on the server and kept temporarily in memory and temporary files. An operations archive is kept for 30 days: hidden or decoded text, parameters, run log, source photo and, where present, the result. In the simple Stego mode the key is not written to the archive. The run log of a project may contain input values, including a key.</li>
+        <li><b>Projects</b> are kept until you delete them, including anything entered in node settings. Recipients of a share link see what the permissions you chose allow.</li>
+        <li><b>Help assistant:</b> questions, answers, IP address and, if signed in, the link to your account are kept for 30 days. Questions and a short chat history are sent to OpenRouter and the provider of the selected model. Free models may retain and use requests under their own terms. Do not send personal data, passwords or keys.</li>
+        <li><b>Technical logs:</b> account actions, IP address and browser details, and an error log with IP address and request path, used for security and support. They are not currently deleted automatically.</li>
+        <li><b>Payments:</b> for Telegram Stars we store your Telegram user ID and username, payment ID, amount in Stars and the issued code or order. We receive no bank card data.</li>
+      </ul>
+
+      <h2>3. Access and service providers</h2>
+      <p>The service administrator can view account data, projects, the operations archive, assistant conversations and logs for support, abuse prevention and bug fixing. We use MiroHost (server in Poland and its backups), Supabase (database), GitHub Pages (website hosting), Cloudflare and Tailscale (backup server addresses), Google and Discord (optional sign-in), Telegram (payments), and OpenRouter with model providers (assistant). They may receive technical data such as your IP address and process it under their own terms, possibly outside your country. We may disclose data where the law requires it.</p>
+
+      <h2>4. Browser storage</h2>
+      <p>Local storage keeps your sign-in token, interface settings and brief profile data; a service-worker cache helps pages open. We use no advertising or analytics cookies. You can clear this data in your browser.</p>
+
+      <h2>5. Your rights and deletion</h2>
+      <p>You may ask for a copy of your data, its correction or deletion of your account. Deleting an account removes its projects, sign-in methods, payment and balance records and operations archive. Entries in activity and error logs and records of issued codes may remain; assistant conversations are deleted after 30 days. Copies in backups disappear as backups are replaced.</p>
+
+      <h2>6. Security, children and changes</h2>
+      <p>The website uses HTTPS, but no system can guarantee absolute security. The service is not intended for children under 13. Changes are published on this page with a new date.</p>
+
+      <h2>7. Contact</h2>
+      <p>Contact us through the project's <a href="https://github.com/VestraNode/Chunky/issues" rel="noopener">GitHub Issues</a>. That page is public, so do not post passwords, keys or other personal data there; just say that you have a privacy request.</p>
+    </section>
+  </main>
+  <footer>© 2026 Raimex Team · <a href="/">vn.raimex.space</a></footer>
+</body>
+</html>

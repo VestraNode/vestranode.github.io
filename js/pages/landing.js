@@ -149,7 +149,7 @@ export default {
         h('div', {}, h('h5', {}, 'Акаунт'), h('a', { href: '#/profile' }, 'Профіль'), h('a', { href: '#/settings' }, 'Налаштування')),
         h('div', {}, h('h5', {}, 'Спільнота'), h('a', { href: links.youtube_url || '#', target: '_blank', rel: 'noopener' }, 'YouTube'),
           h('a', { href: links.discord_url || '#', target: '_blank', rel: 'noopener' }, 'Discord'))),
-      h('div', { class: 'footer-bottom' }, `© ${new Date().getFullYear()} Raimex Team · VestraNode`));
+      h('div', { class: 'footer-bottom' }, `© ${new Date().getFullYear()} Raimex Team · VestraNode · `, h('a', { href: '/privacy/' }, 'Політика конфіденційності')));
 
     root.append(hero, examples, features, pricing, band, footer);
     return () => clearInterval(timer);
