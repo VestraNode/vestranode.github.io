@@ -2,6 +2,7 @@
 import { h, api, state, toast, modal, confirmDialog, promptDialog, fmtInt, fmtDate, fmtBytes, authUrl, assetUrl, debounce } from '../core.js';
 import { triggerDownload } from '../parts.js';
 import { searchField, ico } from '../icons.js';
+import { renderAnswer } from '../assistant.js';
 
 const KIND = { encode: 'Кодування', decode: 'Декодування' };
 const ORIGIN = { stego: 'Стего', project: 'Проєкт' };
@@ -167,25 +168,47 @@ export default {
       const q = h('input', { class: 'input', placeholder: 'Пошук у питаннях і відповідях…' });
       const list = h('div', {});
       const load = async () => {
-        const d = await api(`/api/admin/assistant?limit=60&q=${encodeURIComponent(q.value)}`);
-        list.replaceChildren(table(['Початок', 'Остання', 'Користувач', 'Повідомлень', 'Перше питання', ''], d.items.map((s) => h('tr', { class: 'clickable', onclick: () => openAssistantSession(s.session_id) },
-          h('td', {}, fmtDate(s.started)), h('td', {}, fmtDate(s.last)), h('td', {}, s.email || `гість (${s.ip || '?'})`), h('td', {}, `${s.messages}${s.failed ? ` · помилок ${s.failed}` : ''}`),
+        const d = await api(`/api/admin/assistant?limit=200&q=${encodeURIComponent(q.value)}`);
+        list.replaceChildren(table(['Початок', 'Остання', 'Користувач', 'Повідомлень', 'Перше питання', ''], d.items.map((s) => h('tr', { class: 'clickable', onclick: () => openAssistantSession(s.session_id, load) },
+          h('td', {}, fmtDate(s.started)), h('td', {}, fmtDate(s.last)), h('td', {}, s.email || `гість (${s.ip || '?'})`), h('td', {}, `${s.messages}${s.failed ? ` · без відповіді ${s.failed}` : ''}`),
           h('td', { class: 'ellip' }, s.first_question || '—'), h('td', {}, '›'))), 'Розмов із помічником ще не було.'));
       };
       q.oninput = debounce(load, 300);
       await load();
-      return h('div', {}, h('p', { class: 'fine-note' }, 'Розмови зберігаються 30 днів. Сесія — одна відкрита сторінка довідки: після перезавантаження починається нова.'), h('div', { class: 'row-gap' }, searchField(q)), list);
+      return h('div', {}, h('p', { class: 'fine-note' }, 'Натисніть на рядок, щоб відкрити всю розмову. Розмови зберігаються 30 днів. Сесія — одна відкрита сторінка довідки: після перезавантаження починається нова.'), h('div', { class: 'row-gap' }, searchField(q)), list);
     }
 
-    async function openAssistantSession(id) {
+    /** Уся розмова з помічником: повні питання й відповіді по порядку; можна скопіювати або завантажити текстом. */
+    async function openAssistantSession(id, reload) {
       const d = await api('/api/admin/assistant/' + encodeURIComponent(id));
-      const msgs = d.items.flatMap((m) => [
-        h('div', { class: 'as-msg user', style: { alignSelf: 'flex-end' } }, m.question),
-        h('div', { class: `as-msg ${m.ok ? 'assistant' : 'err'}` }, m.ok ? m.answer : 'Помічник не відповів (усі моделі зайняті).', h('div', { class: 'fine-note' }, `${fmtDate(m.ts)}${m.model ? ' · ' + m.model.replace(/:free$/, '') : ''}`))]);
-      modal({ title: `Помічник · ${d.email || 'гість'}`, content: h('div', { class: 'op-view' },
-        h('div', { class: 'kv-list' }, h('div', {}, h('span', {}, 'Користувач'), h('b', {}, d.email ? `${d.name || ''} (${d.email})` : `гість (${d.ip || '?'})`)), h('div', {}, h('span', {}, 'Повідомлень'), h('b', {}, d.items.length))),
-        h('div', { class: 'as-list', style: { maxHeight: '60vh', display: 'flex', flexDirection: 'column', gap: '8px' } }, msgs),
-        h('div', { class: 'row-gap' }, h('button', { class: 'btn ghost danger', onclick: async () => { if (await confirmDialog('Видалити сесію?', 'Усі повідомлення цієї розмови буде видалено.', 'Видалити', true)) { await api('/api/admin/assistant/' + encodeURIComponent(id), { method: 'DELETE' }); toast('Видалено.', 'ok'); location.reload(); } } }, 'Видалити сесію'))) });
+      const who = d.email ? `${d.name || ''} (${d.email})` : `гість (${d.ip || '?'})`;
+      const ips = [...new Set(d.items.map((m) => m.ip).filter(Boolean))];
+      // питання пишуть сторонні люди: клікабельні лише внутрішні адреси сайту, решту посилань показуємо текстом
+      const link = (label, href) => (/^#\/[\w\-/]*$/.test(href) ? h('a', { class: 'as-link', href, target: '_blank', rel: 'noopener' }, label) : `${label} (${href})`);
+      const turn = (m, i) => h('div', { class: 'chat-turn' },
+        h('div', { class: 'chat-meta' }, [`${i + 1}`, fmtDate(m.ts), m.model ? m.model.replace(/:free$/, '') : '', ips.length > 1 ? m.ip : ''].filter(Boolean).join(' · ')),
+        h('div', { class: 'as-msg user' }, m.question),
+        h('div', { class: `as-msg ${m.ok ? 'assistant' : 'err'}` }, ...(m.ok ? renderAnswer(m.answer || '', link) : ['Помічник не відповів (усі моделі були зайняті).'])));
+      const asText = () => [`Помічник VestraNode · ${who}`, `Сесія: ${id}`, ''].concat(d.items.flatMap((m, i) => [`#${i + 1} · ${fmtDate(m.ts)}${m.model ? ' · ' + m.model : ''}`, `Питання: ${m.question}`, `Відповідь: ${m.ok ? m.answer : '(без відповіді)'}`, ''])).join('\n');
+      const copy = async () => { try { await navigator.clipboard.writeText(asText()); toast('Розмову скопійовано.', 'ok'); } catch { toast('Браузер не дозволив скопіювати.', 'error'); } };
+      const save = () => {
+        const url = URL.createObjectURL(new Blob(['﻿' + asText()], { type: 'text/plain;charset=utf-8' }));
+        h('a', { href: url, download: `assistant_${id.slice(0, 12)}.txt` }).click();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      };
+      const fact = (k, v) => h('div', {}, h('span', {}, k), h('b', {}, v));
+      const result = modal({ title: `Помічник · ${d.email || 'гість'}`, content: h('div', { class: 'op-view' },
+        h('div', { class: 'kv-list' }, fact('Користувач', who), fact('Повідомлень', String(d.items.length)),
+          fact('Коли', `${fmtDate(d.items[0].ts)} — ${fmtDate(d.items[d.items.length - 1].ts)}`), fact('IP', ips.join(', ') || '—'), fact('Сесія', id)),
+        h('div', { class: 'row-gap' }, h('button', { class: 'btn ghost', onclick: copy }, 'Копіювати все'), h('button', { class: 'btn ghost', onclick: save }, 'Завантажити .txt')),
+        h('div', { class: 'chat-log' }, d.items.map(turn))),
+        actions: [{ label: 'Закрити', value: null }, { label: '🗑 Видалити сесію', value: 'del', cls: 'danger' }] });
+      document.querySelector('#modal-root .modal-back:last-child .modal')?.classList.add('wide');
+      if (await result === 'del' && await confirmDialog('Видалити сесію?', 'Усі повідомлення цієї розмови буде видалено.', 'Видалити', true)) {
+        await api('/api/admin/assistant/' + encodeURIComponent(id), { method: 'DELETE' });
+        toast('Видалено.', 'ok');
+        reload?.();
+      }
     }
 
     // ------------------------------------------------------------- активність

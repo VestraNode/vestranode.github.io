@@ -173,7 +173,7 @@ export function toast(message, kind = 'info', ms = 6500) {
 export const toastError = (m) => toast(m, 'error');
 
 // ---------------------------------------------------------------- модальні вікна
-export function modal({ title, text, content, actions }) {
+export function modal({ title, text, content, actions = [{ label: 'Закрити', value: null }] }) {
   return new Promise((resolve) => {
     const close = (v) => { back.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
     const onKey = (e) => { if (e.key === 'Escape') close(null); };

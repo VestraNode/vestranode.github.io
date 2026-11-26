@@ -27,7 +27,7 @@ function inline(text, link) {
 // на сайті свої іконки, тож чужих емодзі у відповідях моделі не показуємо (їх просто прибираємо)
 const NATIVE_EMOJI = /[\p{Extended_Pictographic}‍️]/gu;
 
-function renderAnswer(text, link) {
+export function renderAnswer(text, link) {      // використовує і чат у довідці, і перегляд сесії в адмін-панелі
   text = String(text).replace(NATIVE_EMOJI, (ch) => (hasIcon(ch) ? ch : '')).replace(/[ \t]+\n/g, '\n');
   const nodes = [];
   let list = null;
